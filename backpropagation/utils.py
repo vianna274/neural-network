@@ -29,4 +29,5 @@ class Utils:
         else:
           neurons_count.append(int(neuron))
     return neurons_count, regularization_fac
+  
           
