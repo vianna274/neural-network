@@ -42,7 +42,7 @@ class Utils:
         x = [float(i) for i in x.split(',')]
         y = [float(i) for i in y.split(',')]
         num_input_neurons = len(x)
-        num_output_neurons = len(x)
+        num_output_neurons = len(y)
         d.append(x + y)
 
     my_df = pd.DataFrame(d, columns=['x'+str(i) for i in range(num_input_neurons)]+['y'+str(i) for i in range(num_output_neurons)])
