@@ -46,7 +46,6 @@ class Utils:
         d.append(x + y)
 
     my_df = pd.DataFrame(d, columns=['x'+str(i) for i in range(num_input_neurons)]+['y'+str(i) for i in range(num_output_neurons)])
-    print(my_df)
     return my_df
 
 
