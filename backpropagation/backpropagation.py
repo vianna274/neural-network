@@ -1,6 +1,5 @@
 from typing import List, TypedDict
 import numpy as np
-from math import exp
 import pandas
 
 BIAS = 1
@@ -13,22 +12,53 @@ class Neuron(TypedDict):
   in_weights: List[float]
 
 class BackPropagation:
-  def __init__(self, neurons: List[int], regularization_param: int, inputs, weights: List[List[float]] = None):
+  def __init__(self, neurons: List[int], regularization_param: int, df, weights: List[List[float]] = None):
     self.neurons = neurons
     self.num_of_layers = len(neurons)
     self.regularization_param = regularization_param
     self.active_values: List[List[int]] = self.get_initial_active_values()
     self.gradients: List[List[int]] = self.get_initial_gradients()
     self.deltas: List[List[float]] = self.get_initial_deltas()
-    self.inputs=(inputs-inputs.min())/(inputs.max()-inputs.min())
+    self.inputs = df[df.columns[pandas.Series(df.columns).str.startswith('x')]]
+    self.outputs = df[df.columns[pandas.Series(df.columns).str.startswith('y')]]
 
+    # self.inputs=(inputs-inputs.min())/(inputs.max()-inputs.min())
     if (weights == None):
       self.weights = self.get_random_weights()
     else:
       self.weights = weights
 
-    self.propagate(self.inputs.iloc[0].values.tolist())
+    testInput = self.inputs.iloc[0].values.tolist()
+    output = self.outputs.iloc[0].values.tolist()
+    out_values = self.propagate(testInput)
+    self.update_deltas(output)
+    print("deltas", self.deltas)
+    j_value = self.j_function(out_values, output)
 
+  def get_neuron_weight(self, layer, neuron):
+    return self.weights[layer][neuron+BIAS]
+    
+  def update_deltas(self, correct_value):
+    for neuron in range(0, self.get_num_of_neurons_by_layer(self.num_of_layers-1)):
+      neuron_active_value = self.active_values[self.num_of_layers-1][neuron]
+      last_delta_layer = self.num_of_layers-2
+      self.deltas[last_delta_layer][neuron] = neuron_active_value - correct_value[neuron]
+
+    for layer in range(self.num_of_layers-2, 0, -1):
+      for neuron in range(0, self.get_num_of_neurons_by_layer(layer)):
+        erro = 0.0
+        for weights in range(1, self.get_num_of_neuron_next_layer(layer)+BIAS):
+          weight_value = self.get_neuron_weight(layer, neuron)
+          print("weightsss", weights)
+          delta_value = self.deltas[layer][weights-BIAS]
+          active_value = self.active_values[layer][neuron]
+          print("weight", weight_value)
+          print("delta", delta_value)
+          print("active", active_value)
+          erro += weight_value * delta_value * active_value * (1 - active_value)
+        print("erro", erro)
+        self.deltas[layer-1][neuron] = erro
+  
   def get_neuron_weights(self, layer, neuron):
     weights = []
     previous_neurons = self.get_num_of_neuron_previous_layer(layer) + BIAS
@@ -46,25 +76,28 @@ class BackPropagation:
 
   def propagate(self, inputs):
     temp_inputs = inputs
-    for layer in range(1, self.num_of_layers-1):
+    temp_inputs.insert(0, BIAS_VALUE)
+    for layer in range(1, self.num_of_layers):
       new_inputs = []
-      for neuron in range(0, self.get_num_of_neurons_by_layer(layer) + BIAS):
+      for neuron in range(0, self.get_num_of_neurons_by_layer(layer)):
         weights = self.get_neuron_weights(layer, neuron)
-        print("Weights")
-        print(weights)
         active_value = self.activate(weights, temp_inputs)
-        print("Active " + str(active_value))
         output = self.sigmoid(active_value)
-        print("Sigmoid " + str(output))
+        self.active_values[layer][neuron] = output
+        print("Neuron " + str(neuron) + " Sigmoid " + str(output))
         new_inputs.append(output)
       temp_inputs = new_inputs
-    # print("Temp Inputs")
-    # print(temp_inputs)
-    # weights = self.get_neuron_weights(2, 0)
-    # active_value = self.activate(weights, temp_inputs)
-    # output = self.sigmoid(active_value)
-    # print("Sigmoid " + str(output))
+      if (layer != self.num_of_layers-1):
+        temp_inputs.insert(0,BIAS_VALUE)
+      print("Out", temp_inputs)
     return temp_inputs
+
+  def j_function(self, out_values, predicted_values):
+    cost = 0.0
+    for out_value, predicted in zip(out_values, predicted_values):
+      # Aqui é a regulamentação
+      cost += ((-predicted * (np.log(out_value))) - ((1 - predicted) * np.log(1 - out_value)))
+    return float(cost/len(out_values))
 
   def activate(self, weights: List[float], inputs: List[float]):
     activation = 0.0
@@ -84,7 +117,7 @@ class BackPropagation:
     return self.neurons[layer]
 
   def sigmoid(self, activation):
-	  return 1.0 / (1.0 + exp(-activation))
+	  return 1.0 / (1.0 + np.exp(-activation))
 
   def get_random_weights(self):
     weights = []
@@ -115,6 +148,9 @@ class BackPropagation:
         offset = (num_of_neurons -1) * idx
         values[idx + offset] = BIAS_VALUE
       active_values.append(values)
+
+    values = np.zeros(self.get_num_of_neurons_by_layer(self.num_of_layers-1), dtype=float)
+    active_values.append(values)
     return active_values
 
   def get_initial_deltas(self):
