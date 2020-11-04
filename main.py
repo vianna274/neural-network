@@ -26,7 +26,13 @@ if __name__ == '__main__':
   args: CustomArgs = parser.parse_args()
   weights = Utils.read_weights(args.weights_file)
   neurons_count, regulatizarion_fac = Utils.read_network_file(args.network_file)
-  dataframe: pd.DataFrame = pd.read_csv("assets/" + args.filename, sep=args.separator)
+
+  file_name: str = args.filename
+
+  if file_name.endswith('.txt'):
+    dataframe: pd.DataFrame = Utils.text_to_dataframe(file_name)
+  else:
+    dataframe: pd.DataFrame = pd.read_csv("assets/" + file_name, sep=args.separator)
   neural = BackPropagation(neurons_count, regulatizarion_fac, dataframe, weights)
   
 
