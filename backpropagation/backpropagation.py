@@ -1,6 +1,7 @@
 from typing import List, TypedDict
 import numpy as np
 from math import exp
+import pandas
 
 BIAS = 1
 BIAS_VALUE = 1.0
@@ -12,24 +13,26 @@ class Neuron(TypedDict):
   in_weights: List[float]
 
 class BackPropagation:
-  def __init__(self, neurons: List[int], regularization_param: int, weights: List[List[float]] = None):
+  def __init__(self, neurons: List[int], regularization_param: int, inputs, weights: List[List[float]] = None):
     self.neurons = neurons
     self.num_of_layers = len(neurons)
     self.regularization_param = regularization_param
     self.active_values: List[List[int]] = self.get_initial_active_values()
     self.gradients: List[List[int]] = self.get_initial_gradients()
     self.deltas: List[List[float]] = self.get_initial_deltas()
+    self.inputs=(inputs-inputs.min())/(inputs.max()-inputs.min())
 
     if (weights == None):
       self.weights = self.get_random_weights()
     else:
       self.weights = weights
 
-    self.propagate([0.13, 0.9])
+    self.propagate(self.inputs.iloc[0].values.tolist())
 
   def get_neuron_weights(self, layer, neuron):
     weights = []
     previous_neurons = self.get_num_of_neuron_previous_layer(layer) + BIAS
+
     for i in range(0, previous_neurons):
       offset = neuron * previous_neurons
       weights.append(self.weights[layer-1][i + offset])
@@ -45,14 +48,22 @@ class BackPropagation:
     temp_inputs = inputs
     for layer in range(1, self.num_of_layers-1):
       new_inputs = []
-      for neuron in range(0, self.get_num_of_neurons_by_layer(layer)):
+      for neuron in range(0, self.get_num_of_neurons_by_layer(layer) + BIAS):
         weights = self.get_neuron_weights(layer, neuron)
+        print("Weights")
+        print(weights)
         active_value = self.activate(weights, temp_inputs)
-        print("active " + str(active_value))
+        print("Active " + str(active_value))
         output = self.sigmoid(active_value)
-        print("out " + str(output))
+        print("Sigmoid " + str(output))
         new_inputs.append(output)
       temp_inputs = new_inputs
+    # print("Temp Inputs")
+    # print(temp_inputs)
+    # weights = self.get_neuron_weights(2, 0)
+    # active_value = self.activate(weights, temp_inputs)
+    # output = self.sigmoid(active_value)
+    # print("Sigmoid " + str(output))
     return temp_inputs
 
   def activate(self, weights: List[float], inputs: List[float]):
