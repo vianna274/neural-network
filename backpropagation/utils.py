@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 
 class Utils:
 
@@ -29,5 +30,27 @@ class Utils:
         else:
           neurons_count.append(int(neuron))
     return neurons_count, regularization_fac
+
+  @staticmethod
+  def text_to_dataframe(filename):
+    d = []
+    with open('assets/' + filename) as file:
+      for line in file.readlines():
+        line = line.replace(" ", "")
+        line = line.replace("\n", "")
+        x, y = line.split(';')
+        x = [float(i) for i in x.split(',')]
+        y = [float(i) for i in y.split(',')]
+        num_input_neurons = len(x)
+        num_output_neurons = len(x)
+        d.append(x + y)
+
+    my_df = pd.DataFrame(d, columns=['x'+str(i) for i in range(num_input_neurons)]+['y'+str(i) for i in range(num_output_neurons)])
+    print(my_df)
+    return my_df
+
+
+
+
   
           
