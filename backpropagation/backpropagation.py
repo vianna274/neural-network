@@ -32,32 +32,50 @@ class BackPropagation:
     output = self.outputs.iloc[0].values.tolist()
     out_values = self.propagate(testInput)
     self.update_deltas(output)
-    print("deltas", self.deltas)
+    self.update_weights(testInput)
     j_value = self.j_function(out_values, output)
 
-  def get_neuron_weight(self, layer, neuron):
-    return self.weights[layer][neuron+BIAS]
-    
-  def update_deltas(self, correct_value):
+  def update_weights(self, inputs):
+    temp_inputs = inputs.copy()
+    temp_inputs.insert(0, BIAS_VALUE)
+
+    for neuron in range(0, self.get_num_of_neurons_by_layer(0)+BIAS):
+      for weight in range(0, self.get_num_of_neuron_next_layer(0)):
+        active_value = temp_inputs[neuron]
+        delta = self.deltas[0][weight]
+        gradient = active_value * delta
+        print("Layer",str(0),"Neuron", neuron, "Weight", weight, "gradient", gradient, "active_value", active_value, "delta", delta)
+
+    for layer in range(1, self.num_of_layers-1):
+      for neuron in range(0, self.get_num_of_neurons_by_layer(layer)+BIAS):
+        for weight in range(0, self.get_num_of_neuron_next_layer(layer)):
+          active_value = self.active_values[layer][neuron]
+          delta = self.deltas[layer][weight]
+          gradient = active_value * delta
+          print("Layer",layer,"Neuron", neuron, "Weight", weight, "gradient", gradient, "active_value", active_value, "delta", delta)
+          # TODO: Setar o peso correto
+    print("=====")
+
+  def update_deltas(self, correct_values):
     for neuron in range(0, self.get_num_of_neurons_by_layer(self.num_of_layers-1)):
       neuron_active_value = self.active_values[self.num_of_layers-1][neuron]
       last_delta_layer = self.num_of_layers-2
-      self.deltas[last_delta_layer][neuron] = neuron_active_value - correct_value[neuron]
+      erro = neuron_active_value - correct_values[neuron]
+      self.deltas[last_delta_layer][neuron] = erro
+      print("Layer", str(self.num_of_layers-1), "Neuron", neuron, "Delta=", erro)
 
     for layer in range(self.num_of_layers-2, 0, -1):
       for neuron in range(0, self.get_num_of_neurons_by_layer(layer)):
         erro = 0.0
         for weights in range(1, self.get_num_of_neuron_next_layer(layer)+BIAS):
           weight_value = self.get_neuron_weight(layer, neuron)
-          print("weightsss", weights)
           delta_value = self.deltas[layer][weights-BIAS]
-          active_value = self.active_values[layer][neuron]
-          print("weight", weight_value)
-          print("delta", delta_value)
-          print("active", active_value)
-          erro += weight_value * delta_value * active_value * (1 - active_value)
-        print("erro", erro)
+          active_value = self.active_values[layer][neuron+BIAS]
+          erro += weight_value * delta_value
+        erro = erro * active_value * (1 - active_value)
+        print("Layer", layer, "Neuron", neuron, "Delta=", erro)
         self.deltas[layer-1][neuron] = erro
+    print("=====")
   
   def get_neuron_weights(self, layer, neuron):
     weights = []
@@ -68,28 +86,27 @@ class BackPropagation:
       weights.append(self.weights[layer-1][i + offset])
     return weights
 
-  def set_neuron_weights(self, layer, neuron, weights):
-    curr_neurons = self.get_num_of_neurons_by_layer(layer)
-    for i in range(0, curr_neurons):
-      offset = neuron * (i + 1)
-      weights[layer + 1][i + offset]
-
   def propagate(self, inputs):
-    temp_inputs = inputs
+    temp_inputs = inputs.copy()
     temp_inputs.insert(0, BIAS_VALUE)
+
     for layer in range(1, self.num_of_layers):
       new_inputs = []
       for neuron in range(0, self.get_num_of_neurons_by_layer(layer)):
         weights = self.get_neuron_weights(layer, neuron)
         active_value = self.activate(weights, temp_inputs)
         output = self.sigmoid(active_value)
-        self.active_values[layer][neuron] = output
-        print("Neuron " + str(neuron) + " Sigmoid " + str(output))
+        if (layer == self.num_of_layers-1):
+          self.active_values[layer][neuron] = output
+        else:
+          self.active_values[layer][neuron+BIAS] = output
+          
+        print("Layer", layer, "Neuron", neuron, "Active_value", output)
         new_inputs.append(output)
       temp_inputs = new_inputs
       if (layer != self.num_of_layers-1):
         temp_inputs.insert(0,BIAS_VALUE)
-      print("Out", temp_inputs)
+    print("=====")
     return temp_inputs
 
   def j_function(self, out_values, predicted_values):
@@ -103,7 +120,7 @@ class BackPropagation:
     activation = 0.0
 
     for i in range(0, len(weights)):
-      print ("Peso " + str(weights[i]) + " vezes " + str(inputs[i]))
+      # print ("Peso " + str(weights[i]) + " vezes " + str(inputs[i]))
       activation += weights[i] * inputs[i]
     return activation
 
@@ -186,3 +203,6 @@ class BackPropagation:
     neuron_info['in_weights'] = in_weights
     neuron_info['delta'] = delta
     return neuron_info
+
+  def get_neuron_weight(self, layer, neuron):
+    return self.weights[layer][neuron+BIAS]
