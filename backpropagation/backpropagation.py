@@ -82,7 +82,9 @@ class BackPropagation:
     previous_neurons = self.get_num_of_neuron_previous_layer(layer) + BIAS
 
     for i in range(0, previous_neurons):
-      offset = neuron * previous_neurons
+      offset = ( (neuron-1) * previous_neurons)
+      print(offset)
+      print(neuron, previous_neurons)
       weights.append(self.weights[layer-1][i + offset])
     return weights
 
@@ -114,8 +116,27 @@ class BackPropagation:
     for out_value, predicted in zip(out_values, predicted_values):
       # Aqui é a regulamentação
       cost += ((-predicted * (np.log(out_value))) - ((1 - predicted) * np.log(1 - out_value)))
-    return float(cost/len(out_values))
+    regularization_parcel = self.get_network_total_weight_squared_except_for_biases()
+    regularization_parcel *= self.regularization_param/(2*len(out_values))
+    return float((cost/len(out_values)) + regularization_parcel)
 
+  def get_network_total_weight_squared_except_for_biases(self):
+    layer_sum_list = []
+    for layer in range(1, self.num_of_layers): # starting from second layer
+      total_list_of_weights_without_biases = []
+      for neuron in range(len(self.weights[layer])):
+        total_list_of_weights_without_biases += self.get_neuron_weights(layer, neuron)[1:]
+      total_weights_squared_sum = self.get_layer_squared_sum(total_list_of_weights_without_biases)
+      layer_sum_list.append(total_weights_squared_sum) #removing BIAS weight and
+    return  sum(layer_sum_list) #starting the sum in the second position to avoid BIAS
+
+  def get_layer_squared_sum(self, total_list_of_weights_without_biases):
+    result = 0
+    for element in total_list_of_weights_without_biases:
+      result += element**2
+    return result
+
+  # sum(self.weights[0][1:]) + sum(self.weights[0][1:])
   def activate(self, weights: List[float], inputs: List[float]):
     activation = 0.0
 
