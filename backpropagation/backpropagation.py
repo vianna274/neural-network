@@ -298,3 +298,7 @@ class BackPropagation:
 
   def get_neuron_weight(self, layer, neuron):
     return self.weights[layer][neuron+BIAS]
+
+  def numerical_verification(self, out_values, predicted):
+
+    self.j_function(out_values, predicted)
