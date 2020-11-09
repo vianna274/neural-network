@@ -1,4 +1,5 @@
 from typing import List, TypedDict
+from copy import deepcopy
 import numpy as np
 import pandas
 
@@ -22,6 +23,8 @@ class BackPropagation:
     self.inputs = df[df.columns[pandas.Series(df.columns).str.startswith('x')]]
     self.outputs = df[df.columns[pandas.Series(df.columns).str.startswith('y')]]
 
+    self.numeric_evaluation = True
+
     # self.inputs=(inputs-inputs.min())/(inputs.max()-inputs.min())
     if (weights == None):
       self.weights = self.get_random_weights()
@@ -32,10 +35,10 @@ class BackPropagation:
     output = self.outputs.iloc[0].values.tolist()
     out_values = self.propagate(testInput)
     self.update_deltas(output)
-    self.update_weights(testInput)
+    self.update_weights(testInput, output)
     j_value = self.j_function(out_values, output)
 
-  def update_weights(self, inputs):
+  def update_weights(self, inputs, output):
     temp_inputs = inputs.copy()
     temp_inputs.insert(0, BIAS_VALUE)
 
@@ -46,12 +49,23 @@ class BackPropagation:
         gradient = active_value * delta
         print("Layer",str(0),"Neuron", neuron, "Weight", weight, "gradient", gradient, "active_value", active_value, "delta", delta)
 
+        if (self.numeric_evaluation):
+          result = self.calculate_gradient_numerical_verification(neuron, 0, weight, inputs, output)
+          print("Gradient numerical verification result:")
+          print(result)
+
     for layer in range(1, self.num_of_layers-1):
       for neuron in range(0, self.get_num_of_neurons_by_layer(layer)+BIAS):
         for weight in range(0, self.get_num_of_neuron_next_layer(layer)):
           active_value = self.active_values[layer][neuron]
           delta = self.deltas[layer][weight]
           gradient = active_value * delta
+
+          if (self.numeric_evaluation):
+            result = self.calculate_gradient_numerical_verification(neuron, layer, weight, inputs, output)
+            print("Gradient numerical verification result:")
+            print(result)
+
           print("Layer",layer,"Neuron", neuron, "Weight", weight, "gradient", gradient, "active_value", active_value, "delta", delta)
           # TODO: Setar o peso correto
     print("=====")
@@ -82,10 +96,19 @@ class BackPropagation:
     previous_neurons = self.get_num_of_neuron_previous_layer(layer) + BIAS
 
     for i in range(0, previous_neurons):
-      offset = ( (neuron-1) * previous_neurons)
-      print(offset)
-      print(neuron, previous_neurons)
-      weights.append(self.weights[layer-1][i + offset])
+      offset = (neuron * previous_neurons)
+      weights.append(self.weights[layer - 1][offset + i])
+
+    return weights
+
+  def get_neuron_custom_weights(self, layer, neuron, custom_weights):
+    weights = []
+    previous_neurons = self.get_num_of_neuron_previous_layer(layer) + BIAS
+
+    for i in range(0, previous_neurons):
+      offset = (neuron * previous_neurons)
+      weights.append(custom_weights[layer - 1][offset + i])
+
     return weights
 
   def propagate(self, inputs):
@@ -111,24 +134,72 @@ class BackPropagation:
     print("=====")
     return temp_inputs
 
+  def propagate_with_custom_weights(self, inputs, custom_weights):
+    temp_inputs = inputs.copy()
+    temp_inputs.insert(0, BIAS_VALUE)
+    temp_active_values = self.active_values.copy()
+
+    for layer in range(1, self.num_of_layers):
+      new_inputs = []
+      for neuron in range(0, self.get_num_of_neurons_by_layer(layer)):
+        weights = self.get_neuron_custom_weights(layer, neuron, custom_weights)
+        active_value = self.activate(weights, temp_inputs)
+        output = self.sigmoid(active_value)
+
+        if (layer == self.num_of_layers - 1):
+          temp_active_values[layer][neuron] = output
+        else:
+          temp_active_values[layer][neuron + BIAS] = output
+
+        print("Layer", layer, "Neuron", neuron, "Active_value", output)
+        new_inputs.append(output)
+      temp_inputs = new_inputs
+      if (layer != self.num_of_layers - 1):
+        temp_inputs.insert(0, BIAS_VALUE)
+    print("=====")
+    return temp_inputs
+
   def j_function(self, out_values, predicted_values):
     cost = 0.0
     for out_value, predicted in zip(out_values, predicted_values):
-      # Aqui é a regulamentação
+      # Aqui é a regulamentação FORA GOVERNO
       cost += ((-predicted * (np.log(out_value))) - ((1 - predicted) * np.log(1 - out_value)))
     regularization_parcel = self.get_network_total_weight_squared_except_for_biases()
     regularization_parcel *= self.regularization_param/(2*len(out_values))
     return float((cost/len(out_values)) + regularization_parcel)
 
+  def calculate_gradient_numerical_verification(self, neuron, layer, weight_index, input, output):
+    weights_add = deepcopy(self.weights)
+    weights_sub = deepcopy(self.weights)
+    previous_neurons = self.get_num_of_neuron_next_layer(layer) + BIAS
+    offset = (neuron * previous_neurons)
+
+    weights_add[layer][offset + weight_index] += 0.00001
+    weights_sub[layer][offset + weight_index] -= 0.00001
+
+    weights_add_result = self.propagate_with_custom_weights(input, weights_add)
+    weights_sub_result = self.propagate_with_custom_weights(input, weights_sub)
+
+    j_value_add = self.j_function(weights_add_result, output)
+    j_value_sub = self.j_function(weights_sub_result, output)
+
+    result = (j_value_add - j_value_sub) / (2.0 * 0.00001)
+
+    return result
+
   def get_network_total_weight_squared_except_for_biases(self):
     layer_sum_list = []
+
     for layer in range(1, self.num_of_layers): # starting from second layer
       total_list_of_weights_without_biases = []
-      for neuron in range(len(self.weights[layer])):
+
+      for neuron in range(self.get_num_of_neurons_by_layer(layer)):
         total_list_of_weights_without_biases += self.get_neuron_weights(layer, neuron)[1:]
+
       total_weights_squared_sum = self.get_layer_squared_sum(total_list_of_weights_without_biases)
       layer_sum_list.append(total_weights_squared_sum) #removing BIAS weight and
-    return  sum(layer_sum_list) #starting the sum in the second position to avoid BIAS
+
+    return sum(layer_sum_list) #starting the sum in the second position to avoid BIAS
 
   def get_layer_squared_sum(self, total_list_of_weights_without_biases):
     result = 0
