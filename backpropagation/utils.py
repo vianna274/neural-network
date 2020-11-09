@@ -6,15 +6,20 @@ class Utils:
   @staticmethod
   def read_weights(filename):
     weights = []
-
+    weights.append([])
     filepath = os.path.realpath(os.path.join(os.getcwd(), "assets/" + filename))
     with open(filepath, 'r') as f:
       for line in f:
-        formatted_line = line.replace(',', ';').split(';')
-        line_weight = []
-        for weight in formatted_line:
-          line_weight.append(float(weight))
-        weights.append(line_weight)
+        line_weights = []
+        neurons = line.split(';')
+        line_weights.append([9999])
+        for neuron in neurons:
+          neuron_weights = []
+          file_weights = neuron.split(',')
+          for weight in file_weights:
+            neuron_weights.append(float(weight))
+          line_weights.append(neuron_weights)
+        weights.append(line_weights)
     return weights
 
   @staticmethod
