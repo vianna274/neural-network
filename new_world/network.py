@@ -13,8 +13,8 @@ class Layer:
     self.z_matrix: np.matrix = None # matrix coluna que contém os valores q, se aplicado sigmoind, vai resultar na ativação da próxima layer
 
   def propagate(self, previous_layer, is_last_layer):
-    z = np.dot(previous_layer.weights_matrix, previous_layer.neuron_values)
-    self.neuron_values = Layer.sigmoid(z)
+    self.z_matrix = np.dot(previous_layer.weights_matrix, previous_layer.neuron_values)
+    self.neuron_values = Layer.sigmoid(self.z_matrix)
     if not is_last_layer:
       self.add_bias_neuron()
 
@@ -71,15 +71,30 @@ class Network:
     self.layers = [layer1, layer2, layer3]
 
     ## real implementation
-    self.propagate()
+    print(self.propagate())
+    self.print_network_information()
 
   def propagate(self): # for 1 - n-1
     self.layers[0].add_bias_neuron()
     for k in range(1, self.number_of_layers - 1):
       self.layers[k].propagate(self.layers[k-1], is_last_layer=False)
     self.layers[self.number_of_layers-1].propagate(self.layers[self.number_of_layers-2], is_last_layer=True)
-
     return self.layers[self.number_of_layers-1].neuron_values
+
+  def print_network_information(self):
+    print("\nprinting network information: ")
+    for k in range(self.number_of_layers):
+      print("----------")
+      print("Layer: " + str(k + 1))
+      if (self.layers[k].z_matrix is not None):
+        print("z matrix: ")
+        print(self.layers[k].z_matrix.squeeze(1))
+      print("activations: ")
+      print(self.layers[k].neuron_values.squeeze(1))
+    print("f(x)", self.layers[self.number_of_layers-1].neuron_values.squeeze(1))
+
+
+
 
 if __name__ == '__main__':
   np.random.seed(4)
