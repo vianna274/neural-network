@@ -23,6 +23,10 @@ class Layer:
     self.neuron_values = np.insert(self.neuron_values, 0, BIAS, axis=0)
 
 
+  def get_not_bias_weights(self):
+    return np.delete(self.weights_matrix, 0, 1)
+
+
   def setup_initial_weights(self, loaded_weights_matrix):
     """
       Setup the initial weights for the network
@@ -39,9 +43,11 @@ class Layer:
     return 1. / (1. + np.exp(-z))
 
 class Network:
-  def __init__(self, number_of_layers: int):
+  def __init__(self, number_of_layers: int, y: np.array, epslon: float):
     self.number_of_layers = number_of_layers
-
+    self.fx = None
+    self.epslon: float = epslon
+    self.y: np.array = y
     # 0.40000, 0.10000; 0.30000, 0.20000
     # 0.70000, 0.50000, 0.60000
 
@@ -71,7 +77,8 @@ class Network:
     self.layers = [layer1, layer2, layer3]
 
     ## real implementation
-    print(self.propagate())
+    self.fx = self.propagate()
+    self.cost = self.cost_function()
     self.print_network_information()
 
   def propagate(self): # for 1 - n-1
@@ -80,6 +87,25 @@ class Network:
       self.layers[k].propagate(self.layers[k-1], is_last_layer=False)
     self.layers[self.number_of_layers-1].propagate(self.layers[self.number_of_layers-2], is_last_layer=True)
     return self.layers[self.number_of_layers-1].neuron_values
+
+  def cost_function(self):
+    """
+      Implements the cost function
+    :return:
+    """
+    n = len(self.y)
+    j = (-self.y) * np.log(self.fx) - ((1 - self.y) * np.log(1 - self.fx))
+    j = j.sum()/n
+
+    s = 0 # not bias weights sum
+    for layer in self.layers:
+      s += np.sum(np.power(layer.get_not_bias_weights(), 2))
+    s = (self.epslon/(2*n)) * s
+    return j + s
+
+  def get_regularization_factor(self):
+    pass
+
 
   def print_network_information(self):
     print("\nprinting network information: ")
@@ -92,13 +118,15 @@ class Network:
       print("activations: ")
       print(self.layers[k].neuron_values.squeeze(1))
     print("f(x)", self.layers[self.number_of_layers-1].neuron_values.squeeze(1))
+    print("J do exemplo 1: ", self.cost)
 
 
 
 
 if __name__ == '__main__':
   np.random.seed(4)
-  network = Network(3)
+  y = np.array([0.9])
+  network = Network(3, y, epslon=0.0)
 
 
 # multiplicar a matrix com os pesos dos neuroneos pela matrix das entradas
