@@ -1,46 +1,8 @@
 import numpy as np
+from layer import Layer
 
 BIAS = 1
 
-class Layer:
-  def __init__(self, current_number_of_neurons: int, next_number_of_neurons: int, loaded_weights_matrix: np.matrix = None, neuron_values: np.matrix = None):
-    self.current_number_of_neurons = current_number_of_neurons
-    self.next_number_of_neurons = next_number_of_neurons
-    # setup layer weights
-    self.weights_matrix: np.matrix = None
-    self.neuron_values: np.matrix = neuron_values # vai ser uma matrix coluna
-    self.setup_initial_weights(loaded_weights_matrix)
-    self.z_matrix: np.matrix = None # matrix coluna que contém os valores q, se aplicado sigmoind, vai resultar na ativação da próxima layer
-
-  def propagate(self, previous_layer, is_last_layer):
-    self.z_matrix = np.dot(previous_layer.weights_matrix, previous_layer.neuron_values)
-    self.neuron_values = Layer.sigmoid(self.z_matrix)
-    if not is_last_layer:
-      self.add_bias_neuron()
-
-
-  def add_bias_neuron(self):
-    self.neuron_values = np.insert(self.neuron_values, 0, BIAS, axis=0)
-
-
-  def get_not_bias_weights(self):
-    return np.delete(self.weights_matrix, 0, 1)
-
-
-  def setup_initial_weights(self, loaded_weights_matrix):
-    """
-      Setup the initial weights for the network
-      If we have something loaded, we use it, if not, we create the weights randomly
-    """
-    if loaded_weights_matrix is None:
-      self.weights_matrix = np.random.random_sample(
-        [self.next_number_of_neurons, self.current_number_of_neurons])
-    else:
-      self.weights_matrix = loaded_weights_matrix
-
-  @staticmethod
-  def sigmoid(z):
-    return 1. / (1. + np.exp(-z))
 
 class Network:
   def __init__(self, number_of_layers: int, y: np.array, epslon: float):
@@ -83,9 +45,11 @@ class Network:
 
   def propagate(self): # for 1 - n-1
     self.layers[0].add_bias_neuron()
+
     for k in range(1, self.number_of_layers - 1):
       self.layers[k].propagate(self.layers[k-1], is_last_layer=False)
     self.layers[self.number_of_layers-1].propagate(self.layers[self.number_of_layers-2], is_last_layer=True)
+
     return self.layers[self.number_of_layers-1].neuron_values
 
   def cost_function(self):
@@ -97,15 +61,19 @@ class Network:
     j = (-self.y) * np.log(self.fx) - ((1 - self.y) * np.log(1 - self.fx))
     j = j.sum()/n
 
-    s = 0 # not bias weights sum
-    for layer in self.layers:
-      s += np.sum(np.power(layer.get_not_bias_weights(), 2))
-    s = (self.epslon/(2*n)) * s
+    s = self.get_regularization_factor()
+
     return j + s
 
   def get_regularization_factor(self):
-    pass
+    s = 0  # not bias weights sum
+    n = len(self.y)
 
+    for layer in self.layers:
+      s += np.sum(np.power(layer.get_not_bias_weights(), 2))
+    s = (self.epslon/(2*n)) * s
+
+    return s
 
   def print_network_information(self):
     print("\nprinting network information: ")
@@ -119,8 +87,6 @@ class Network:
       print(self.layers[k].neuron_values.squeeze(1))
     print("f(x)", self.layers[self.number_of_layers-1].neuron_values.squeeze(1))
     print("J do exemplo 1: ", self.cost)
-
-
 
 
 if __name__ == '__main__':
