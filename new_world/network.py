@@ -47,12 +47,18 @@ class Network:
 
     entries = np.matrix([0.13])
 
-    weights1 = np.matrix([[0.4, 0.1],
-                        [0.3, 0.2]])
+    weights1 = np.matrix(
+      [
+        [0.4, 0.1],
+        [0.3, 0.2]
+      ]
+    )
 
-    weights2 = np.matrix([[0.7],
-                         [0.5],
-                         [0.6]])
+    weights2 = np.matrix(
+      [
+        [0.7, 0.5, 0.6]
+      ]
+    )
 
     entries = np.transpose(entries)
     layer1 = Layer(1, 2, neuron_values=entries, loaded_weights_matrix=weights1)
