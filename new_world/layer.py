@@ -40,7 +40,7 @@ class Layer:
     else:
       self.weights_matrix = loaded_weights_matrix
 
-  def set_layer_delta(self, delta):
+  def set_delta(self, delta):
     """
       Sets the delta value for the layer
       (designed to set the delta for the last layer by the back propagation)
@@ -55,7 +55,9 @@ class Layer:
     :param next_layer:
     """
     self.delta = np.multiply(np.multiply(np.transpose(self.weights_matrix) * next_layer.delta, self.neuron_values), (1 - self.neuron_values))
-    self.delta = np.delete(self.delta, 0, 1) #TODO: verify the axis
+
+  def remove_first_element_from_delta(self):
+    self.delta = np.delete(self.delta, 0, 1)  # TODO: verify the axis
 
   def update_gradients(self, next_layer):
     """

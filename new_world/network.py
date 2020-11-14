@@ -1,15 +1,24 @@
 import numpy as np
-from layer import Layer
+from .layer import Layer
+from typing import List
 
 BIAS = 1
 
 
 class Network:
-  def __init__(self, number_of_layers: int, y: np.array, epslon: float):
+  def __init__(self, number_of_layers: int, x:np.array, y: np.array, epslon: float):
     self.number_of_layers = number_of_layers
     self.fx = None
     self.epslon: float = epslon
+
+    # x and y represents the values for x and y from the training set
+    self.x = np.array = x
     self.y: np.array = y
+
+    # current_x and current y are the ones used for the calculation in one example
+    self.current_x = None
+    self.current_y = None
+
     # 0.40000, 0.10000; 0.30000, 0.20000
     # 0.70000, 0.50000, 0.60000
 
@@ -36,7 +45,7 @@ class Network:
     # 0.13000; 0.90000 primeiro exemplo
     # 0.42000; 0.23000 segundo
 
-    self.layers = [layer1, layer2, layer3]
+    self.layers: List[Layer] = [layer1, layer2, layer3]
 
     ## real implementation
     self.fx = self.propagate()
@@ -89,10 +98,53 @@ class Network:
     print("J do exemplo 1: ", self.cost)
 
 
+  def backpropagation(self):
+    """
+      Implements the back propagation in a vectorized way
+      implementation
+    """
+
+    n = len(x)
+    last_layer_index = self.number_of_layers - 1
+    first_layer_index = -1
+    last_hidden_layer_index = last_layer_index - 1
+    first_hidden_layer_index = 0
+
+    for example in zip(x,y): #1 for each example in the training set
+
+      # configures the inputs  and the outputs for the network for each example
+      self.current_x = example[0]
+      self.current_y = example[1]
+
+      self.fx = self.propagate() # 1.1
+
+
+      self.layers[last_layer_index].set_delta(self.fx - self.y) # 1.2 calculates the delta for the last layer
+
+      for k in range(last_hidden_layer_index, first_hidden_layer_index, -1): # 1.3 calculates delta for the hidden layers
+        self.layers[k].calculate_delta(self.layers[k+1])
+        self.layers[k].remove_first_element_from_delta()
+
+      for k in range(last_hidden_layer_index, first_layer_index, -1): # 1.4 for each layer, updates the gradients based in the current example
+        self.layers[k].update_gradients(self.layers[k+1])
+
+    for k in range(last_hidden_layer_index, first_layer_index, -1):  # 2
+      self.layers[k].calculate_final_gradients(n)
+
+    for k in range(last_hidden_layer_index, first_layer_index, -1):  # 3
+      self.layers[k].update_weights()
+
+
+
+
+
+
+
 if __name__ == '__main__':
   np.random.seed(4)
+  x = np.array([0.9])
   y = np.array([0.9])
-  network = Network(3, y, epslon=0.0)
+  network = Network(3, x=x, y=y, epslon=0.0)
 
 
 # multiplicar a matrix com os pesos dos neuroneos pela matrix das entradas
