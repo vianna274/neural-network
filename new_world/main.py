@@ -1,8 +1,9 @@
 import argparse
 from typing import TypedDict
 import pandas as pd
-from backpropagation.utils import Utils
-from backpropagation.backpropagation import BackPropagation
+from new_world.utils import Utils
+from new_world.network import Network
+import numpy as np
 
 class CustomArgs(TypedDict):
   filename: str
@@ -16,16 +17,17 @@ class CustomArgs(TypedDict):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="Args to run NeuralNetwork")
   parser.add_argument("-f", required=True, dest="filename", help="The dataset filename", type=str)
-  parser.add_argument("-k", required=False, dest="k_folds", default=10, help="Number of folds", type=int)
-  parser.add_argument("-c", required=True, dest="class_column", help="Class to be predicted", type=str)
-  parser.add_argument("-s", required=False, dest="separator", default=";", help="The data separator", type=str)
-  parser.add_argument("-n", required=True, dest="network_file", help="Network file", type=str)
+  # parser.add_argument("-k", required=False, dest="k_folds", default=10, help="Number of folds", type=int)
+  # parser.add_argument("-c", required=True, dest="class_column", help="Class to be predicted", type=str)
+  # parser.add_argument("-s", required=False, dest="separator", default=";", help="The data separator", type=str)
+  parser.add_argument("-n", required=True, dest="network_file", help="Network file: provides the topology of the network", type=str)
   parser.add_argument("-w", required=False, dest="weights_file", default="", help="Weights File", type=str)
-  parser.add_argument("-seed", required=False, dest="seed", default=26, help="Seed to random", type=int)
+  # parser.add_argument("-seed", required=False, dest="seed", default=26, help="Seed to random", type=int)
 
   args: CustomArgs = parser.parse_args()
+  print(args.weights_file)
   weights = Utils.read_weights(args.weights_file)
-  neurons_count, regulatizarion_fac = Utils.read_network_file(args.network_file)
+  network_topology, regulatizarion_fac = Utils.read_network_file(args.network_file)
 
   file_name: str = args.filename
 
@@ -33,7 +35,24 @@ if __name__ == '__main__':
     dataframe: pd.DataFrame = Utils.text_to_dataframe(file_name)
   else:
     dataframe: pd.DataFrame = pd.read_csv("./assets/" + file_name, sep=args.separator)
-  neural = BackPropagation(neurons_count, regulatizarion_fac, dataframe, weights)
-  
+
+
+  filter_col_x = [col for col in dataframe if col.startswith('x')]
+  filter_col_y = [col for col in dataframe if col.startswith('y')]
+
+  x_df = dataframe[filter_col_x]
+  y_df = dataframe[filter_col_y]
+
+  x_matrix = np.matrix(x_df.to_numpy())
+  y_matrix = np.matrix(y_df.to_numpy())
+
+  number_of_layers = len(network_topology)
+
+  neural = Network(number_of_layers, x_matrix, y_matrix, regulatizarion_fac, weights, network_topology)
+
+  neural.backpropagation()
+  print("cost", neural.cost_function())
+  neural.calculate_gradient_numerical_verification()
+  neural.compare_gradients_with_numerical_estimation()
 
 
