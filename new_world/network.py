@@ -1,23 +1,24 @@
 import numpy as np
-from .layer import Layer
+from layer import Layer
 from typing import List
 
 BIAS = 1
 
 
 class Network:
-  def __init__(self, number_of_layers: int, x:np.array, y: np.array, epslon: float):
+  def __init__(self, number_of_layers: int, x: np.matrix, y: np.matrix, epslon: float):
     self.number_of_layers = number_of_layers
     self.fx = None
     self.epslon: float = epslon
 
     # x and y represents the values for x and y from the training set
-    self.x = np.array = x
-    self.y: np.array = y
+    self.x: np.matrix = x
+    self.y: np.matrix = y
 
     # current_x and current y are the ones used for the calculation in one example
-    self.current_x = None
-    self.current_y = None
+    self.current_x: np.matrix = None
+    self.current_y: np.matrix = None
+    self.number_of_examples = len(y)
 
     # 0.40000, 0.10000; 0.30000, 0.20000
     # 0.70000, 0.50000, 0.60000
@@ -38,21 +39,22 @@ class Network:
     )
 
     entries = np.transpose(entries)
-    layer1 = Layer(1, 2, neuron_values=entries, loaded_weights_matrix=weights1)
+
+    # TODO: this block of layer creation needs to be extracted to a method and we need to create it from the file
+    layer1 = Layer(1, 2, loaded_weights_matrix=weights1)
     layer2 = Layer(2, 1, loaded_weights_matrix=weights2)
     layer3 = Layer(1, 0)
-
-    # 0.13000; 0.90000 primeiro exemplo
-    # 0.42000; 0.23000 segundo
-
     self.layers: List[Layer] = [layer1, layer2, layer3]
 
     ## real implementation
-    self.fx = self.propagate()
-    self.cost = self.cost_function()
-    self.print_network_information()
+    # self.fx = self.propagate()
+    # self.cost = self.cost_function()
+    # self.print_network_information()
+    print(self.x)
+    print(self.y)
 
   def propagate(self): # for 1 - n-1
+    self.layers[0].neuron_values = np.transpose(self.current_x) # sets the value for the neurons in the first layer
     self.layers[0].add_bias_neuron()
 
     for k in range(1, self.number_of_layers - 1):
@@ -63,20 +65,31 @@ class Network:
 
   def cost_function(self):
     """
-      Implements the cost function
+      Implements the cost function (J)
     :return:
     """
-    n = len(self.y)
-    j = (-self.y) * np.log(self.fx) - ((1 - self.y) * np.log(1 - self.fx))
-    j = j.sum()/n
+    n = self.number_of_examples  # n = number of examples in the training set
 
-    s = self.get_regularization_factor()
+    examples_costs = [] #1 initialize the variable that will be accumulating the total error for the network
+    for index, example in enumerate(zip(self.x, self.y)): # for each example (x(i), y(i)) in the training set
 
-    return j + s
+      # configures the inputs  and the outputs for the network for each example
+      self.current_x = example[0]
+      self.current_y = example[1]
+
+      fx = self.propagate() #2.1 propagate x(i) and get the fθ(x(i)) outputs predicted by the network
+
+      # 2.2 calculates the vector J(i) (for the example) with the associated cost for each output from the network from the current example
+      examples_costs.append((-self.current_y) * np.log(fx) - ((1 - self.current_y) * np.log(1 - fx)))
+      print("J do exemplo " + str(index + 1) + ": " + str(examples_costs[index]))
+    j = (sum(examples_costs))/n #3 divides the total error by the number of examples
+    s = self.get_regularization_factor() #4&5  calculates the regularization term
+
+    return j + s # returns the regularized cost
 
   def get_regularization_factor(self):
     s = 0  # not bias weights sum
-    n = len(self.y)
+    n = self.number_of_examples
 
     for layer in self.layers:
       s += np.sum(np.power(layer.get_not_bias_weights(), 2))
@@ -95,7 +108,7 @@ class Network:
       print("activations: ")
       print(self.layers[k].neuron_values.squeeze(1))
     print("f(x)", self.layers[self.number_of_layers-1].neuron_values.squeeze(1))
-    print("J do exemplo 1: ", self.cost)
+
 
 
   def backpropagation(self):
@@ -104,13 +117,13 @@ class Network:
       implementation
     """
 
-    n = len(x)
+    n = self.number_of_examples
     last_layer_index = self.number_of_layers - 1
     first_layer_index = -1
     last_hidden_layer_index = last_layer_index - 1
     first_hidden_layer_index = 0
 
-    for example in zip(x,y): #1 for each example in the training set
+    for example in zip(self.x, self.y): #1 for each example in the training set
 
       # configures the inputs  and the outputs for the network for each example
       self.current_x = example[0]
@@ -118,21 +131,30 @@ class Network:
 
       self.fx = self.propagate() # 1.1
 
+      self.print_network_information()
 
-      self.layers[last_layer_index].set_delta(self.fx - self.y) # 1.2 calculates the delta for the last layer
+      self.layers[last_layer_index].set_delta(self.fx - self.current_y) # 1.2 calculates the delta for the last layer
+
+      print("delta ", last_layer_index+1, self.fx - self.current_y)
 
       for k in range(last_hidden_layer_index, first_hidden_layer_index, -1): # 1.3 calculates delta for the hidden layers
         self.layers[k].calculate_delta(self.layers[k+1])
         self.layers[k].remove_first_element_from_delta()
+        print("delta ", k + 1, self.layers[k].delta)
 
       for k in range(last_hidden_layer_index, first_layer_index, -1): # 1.4 for each layer, updates the gradients based in the current example
+        print("k", k)
         self.layers[k].update_gradients(self.layers[k+1])
 
     for k in range(last_hidden_layer_index, first_layer_index, -1):  # 2
       self.layers[k].calculate_final_gradients(n)
+      print("Gradientes finais", k+1, self.layers[k].D)
 
-    for k in range(last_hidden_layer_index, first_layer_index, -1):  # 3
+
+    for k in range(last_hidden_layer_index, first_layer_index, -1):  # 3 in the end of the epoch we update the weights
       self.layers[k].update_weights()
+
+    return "Hey back propagation working"
 
 
 
@@ -142,9 +164,12 @@ class Network:
 
 if __name__ == '__main__':
   np.random.seed(4)
-  x = np.array([0.9])
-  y = np.array([0.9])
+  x = np.matrix([[0.13], [0.42]])
+  y = np.matrix([[0.9], [0.23]])
   network = Network(3, x=x, y=y, epslon=0.0)
+
+  print(network.backpropagation())
+
 
 
 # multiplicar a matrix com os pesos dos neuroneos pela matrix das entradas

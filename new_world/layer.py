@@ -13,8 +13,9 @@ class Layer:
     self.setup_initial_weights(loaded_weights_matrix)
     self.z_matrix: np.matrix = None # matrix coluna que contém os valores q, se aplicado sigmoind, vai resultar na ativação da próxima layer
     self.delta = None
-    self.D = None
+    self.D = np.zeros([1, next_number_of_neurons])
     self.alpha = 0.0
+    self.regularization = 0.0
 
   def propagate(self, previous_layer, is_last_layer):
     self.z_matrix = np.dot(previous_layer.weights_matrix, previous_layer.neuron_values)
@@ -57,20 +58,32 @@ class Layer:
     self.delta = np.multiply(np.multiply(np.transpose(self.weights_matrix) * next_layer.delta, self.neuron_values), (1 - self.neuron_values))
 
   def remove_first_element_from_delta(self):
-    self.delta = np.delete(self.delta, 0, 1)  # TODO: verify the axis
+    self.delta = np.delete(self.delta, 0, 0)  # TODO: verify the axis
 
   def update_gradients(self, next_layer):
     """
       This function prepares the gradients (not final version) based on the weights and delta
     :param next_layer:
     """
-    self.D = self.D + np.dot(next_layer.delta, np.transpose(self.neuron_values))
+
+    gradient = np.dot(next_layer.delta, np.transpose(self.neuron_values))
+
+    if self.D is None:
+      self.D = np.zeros(gradient.shape)
+
+    print("gradient tetha ", gradient)
+
+    self.D = self.D + gradient
 
   def calculate_final_gradients(self, n):
     """
       Calculate the regularized gradients
     :param n: number of examples
     """
+
+    weighs_without_bias = np.copy(self.weights_matrix)
+    weighs_without_bias[:, 0] = 0 # zeroes the first column (for BIAS)
+
     P = self.regularization * self.weights_matrix
     self.D = (1/n) * (self.D + P)
 

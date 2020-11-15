@@ -57,23 +57,23 @@ J total do dataset (com regularizacao): 0.82098
 --------------------------------------------
 Rodando backpropagation
 	Calculando gradientes com base no exemplo 1
-		delta3: [-0.10597]
-		delta2: [-0.01270   -0.01548]
+		delta3: [-0.10597] - ok
+		delta2: [-0.01270   -0.01548] ok
 		Gradientes de Theta2 com base no exemplo 1:
-			-0.10597  -0.06378  -0.06155  
+			-0.10597  -0.06378  -0.06155  - ok
 
 		Gradientes de Theta1 com base no exemplo 1:
-			-0.01270  -0.00165  
+			-0.01270  -0.00165  - ok
 			-0.01548  -0.00201  
 
 	Calculando gradientes com base no exemplo 2
 		delta3: [0.56597]
 		delta2: [0.06740   0.08184]
 		Gradientes de Theta2 com base no exemplo 2:
-			0.56597  0.34452  0.33666  
+			0.56597  0.34452  0.33666  - ok
 
 		Gradientes de Theta1 com base no exemplo 2:
-			0.06740  0.02831  
+			0.06740  0.02831  ok
 			0.08184  0.03437  
 
 	Dataset completo processado. Calculando gradientes regularizados
