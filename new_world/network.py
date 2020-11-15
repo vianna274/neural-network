@@ -1,15 +1,15 @@
 import numpy as np
-from layer import Layer
+from new_world.layer import Layer
 from typing import List
 
 BIAS = 1
 
 
 class Network:
-  def __init__(self, number_of_layers: int, x: np.matrix, y: np.matrix, epslon: float):
+  def __init__(self, number_of_layers: int, x: np.matrix, y: np.matrix, regularization_factor: float, network_weights: List, network_topology: List):
     self.number_of_layers = number_of_layers
     self.fx = None
-    self.epslon: float = epslon
+    self.regularization: float = regularization_factor
 
     # x and y represents the values for x and y from the training set
     self.x: np.matrix = x
@@ -24,38 +24,16 @@ class Network:
     self.network_final_gradients_per_layer = [] #used for the numerical verification
     self.network_estimated_gradients_per_layer = [] #used for the numerical verification
 
-    # 0.40000, 0.10000; 0.30000, 0.20000
-    # 0.70000, 0.50000, 0.60000
+    self.layers = []
+    self.initialize_network_weights(network_topology, network_weights, number_of_layers)
 
-    entries = np.matrix([0.13])
-
-    weights1 = np.matrix(
-      [
-        [0.4, 0.1],
-        [0.3, 0.2]
-      ]
-    )
-
-    weights2 = np.matrix(
-      [
-        [0.7, 0.5, 0.6]
-      ]
-    )
-
-    entries = np.transpose(entries)
-
-    # TODO: this block of layer creation needs to be extracted to a method and we need to create it from the file
-    layer1 = Layer(1, 2, loaded_weights_matrix=weights1)
-    layer2 = Layer(2, 1, loaded_weights_matrix=weights2)
-    layer3 = Layer(1, 0)
-    self.layers: List[Layer] = [layer1, layer2, layer3]
-
-    ## real implementation
-    # self.fx = self.propagate()
-    # self.cost = self.cost_function()
-    # self.print_network_information()
-    print(self.x)
-    print(self.y)
+  def initialize_network_weights(self, network_topology, network_weights, number_of_layers):
+    for k in range(number_of_layers):
+      if k + 1 <= number_of_layers - 1:
+        self.layers.append(
+          Layer(network_topology[k], network_topology[k + 1], loaded_weights_matrix=network_weights[k]))
+      else:
+        self.layers.append(Layer(network_topology[k], 0, loaded_weights_matrix=None))
 
   def propagate(self): # for 1 - n-1
     self.layers[0].neuron_values = np.transpose(self.current_x) # sets the value for the neurons in the first layer
@@ -96,7 +74,7 @@ class Network:
 
     for layer in self.layers:
       s += np.sum(np.power(layer.get_not_bias_weights(), 2))
-    s = (self.epslon/(2*n)) * s
+    s = (self.regularization / (2 * n)) * s
 
     return s
 
@@ -207,14 +185,14 @@ class Network:
       layer_final_calculated: np.matrix = np.array(self.network_final_gradients_per_layer[k])
 
       mean_diff = np.mean(np.abs(layer_numerical_estimation - layer_final_calculated))
-      print('Erro entre grandiente via backprop e grandiente numerico para Theta%d: %.10f' % (k + 1, mean_diff))
+      print('Erro médio entre grandiente via backprop e grandiente numerico para Theta%d: %.10f' % (k + 1, mean_diff))
 
 
 if __name__ == '__main__':
   np.random.seed(4)
   x = np.matrix([[0.13], [0.42]])
   y = np.matrix([[0.9], [0.23]])
-  network = Network(3, x=x, y=y, epslon=0.0)
+  network = Network(3, x=x, y=y, regularization_factor=0.0)
 
   print(network.backpropagation())
   network.calculate_gradient_numerical_verification()

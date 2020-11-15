@@ -1,25 +1,32 @@
 import os
 import pandas as pd
+import numpy as np
 
 class Utils:
 
   @staticmethod
   def read_weights(filename):
-    weights = []
-
+    """
+      Reads the weights file and returns the theta matrix for each layer
+    :param filename:
+    :return: [theta1, theta2, theta3....]
+    """
     filepath = os.path.realpath(os.path.join(os.getcwd(), "assets/" + filename))
+    layer_weights = []
+
+    print(filepath)
     with open(filepath, 'r') as f:
       for line in f:
-        formatted_line = line.replace(',', ';').split(';')
-        line_weight = []
-        for weight in formatted_line:
-          line_weight.append(float(weight))
-        weights.append(line_weight)
-
-    return weights
+        layer_weights.append(np.matrix(line))
+    return layer_weights
 
   @staticmethod
   def read_network_file(filename):
+    """
+      Returns the network topology with the number of neurons per layer
+    :param filename:
+    :return:
+    """
     regularization_fac = None
     neurons_count = []
 
