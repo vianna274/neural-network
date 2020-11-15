@@ -24,7 +24,7 @@ class Network:
     self.network_final_gradients_per_layer = [] #used for the numerical verification
     self.network_estimated_gradients_per_layer = [] #used for the numerical verification
 
-    self.layers = []
+    self.layers: List[Layer] = []
     self.initialize_network_weights(network_topology, network_weights, number_of_layers)
 
   def initialize_network_weights(self, network_topology, network_weights, number_of_layers):
@@ -33,7 +33,7 @@ class Network:
         self.layers.append(
           Layer(network_topology[k], network_topology[k + 1], loaded_weights_matrix=network_weights[k]))
       else:
-        self.layers.append(Layer(network_topology[k], 0, loaded_weights_matrix=None))
+        self.layers.append(Layer(network_topology[k], 0))
 
   def propagate(self): # for 1 - n-1
     self.layers[0].neuron_values = np.transpose(self.current_x) # sets the value for the neurons in the first layer
