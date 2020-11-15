@@ -19,6 +19,10 @@ class Network:
     self.current_x: np.matrix = None
     self.current_y: np.matrix = None
     self.number_of_examples = len(y)
+    self.variation = 0.000001
+
+    self.network_final_gradients_per_layer = [] #used for the numerical verification
+    self.network_estimated_gradients_per_layer = [] #used for the numerical verification
 
     # 0.40000, 0.10000; 0.30000, 0.20000
     # 0.70000, 0.50000, 0.60000
@@ -81,7 +85,6 @@ class Network:
 
       # 2.2 calculates the vector J(i) (for the example) with the associated cost for each output from the network from the current example
       examples_costs.append((-self.current_y) * np.log(fx) - ((1 - self.current_y) * np.log(1 - fx)))
-      print("J do exemplo " + str(index + 1) + ": " + str(examples_costs[index]))
     j = (sum(examples_costs))/n #3 divides the total error by the number of examples
     s = self.get_regularization_factor() #4&5  calculates the regularization term
 
@@ -148,6 +151,7 @@ class Network:
 
     for k in range(last_hidden_layer_index, first_layer_index, -1):  # 2
       self.layers[k].calculate_final_gradients(n)
+      self.network_final_gradients_per_layer.append(self.layers[k].D)
       print("Gradientes finais", k+1, self.layers[k].D)
 
 
@@ -156,10 +160,54 @@ class Network:
 
     return "Hey back propagation working"
 
+  def calculate_gradient_numerical_verification(self):
+    """
+      Calculates estimation for the gradients in the network and stores it to network_estimated_gradients
+    """
 
+    last_layer_index = self.number_of_layers - 1
+    first_layer_index = -1
+    last_hidden_layer_index = last_layer_index - 1
 
+    network_estimated_gradients = []
 
+    print("\nPrinting the numerical validation for the gradients")
+    for k in range(last_hidden_layer_index, first_layer_index, -1):  # 1 in the end of the epoch we update the weights
+      original_theta = np.copy(self.layers[k].weights_matrix)
+      layer_estimated_gradients = []
+      for i in range(original_theta.shape[0]):
+        line = []
+        for j in range(original_theta.shape[1]):
+          # calculates the positive variation
+          self.layers[k].weights_matrix = np.copy(original_theta)
+          self.layers[k].weights_matrix[i][j] += self.variation
+          positive_variation_cost = float(self.cost_function()[0][0])
 
+          # calculates the negative variation
+          self.layers[k].weights_matrix = np.copy(original_theta)
+          self.layers[k].weights_matrix[i][j] -= self.variation
+          negative_variation_cost = float(self.cost_function()[0][0])
+          line.append((positive_variation_cost - negative_variation_cost)/(2 * self.variation))
+        layer_estimated_gradients.append(line)
+      print("Numerical gradient aprox for layer ", k, layer_estimated_gradients)
+      network_estimated_gradients.append(layer_estimated_gradients)
+
+    self.network_estimated_gradients_per_layer = [np.matrix(x) for x in network_estimated_gradients]
+
+  def compare_gradients_with_numerical_estimation(self):
+    last_layer_index = self.number_of_layers - 1
+    first_layer_index = -1
+    last_hidden_layer_index = last_layer_index - 1
+
+    print("estimated", self.network_estimated_gradients_per_layer)
+    print("calculated", self.network_final_gradients_per_layer)
+
+    for k in range(last_hidden_layer_index, first_layer_index, -1):
+      layer_numerical_estimation: np.matrix = np.array(self.network_estimated_gradients_per_layer[k])
+      layer_final_calculated: np.matrix = np.array(self.network_final_gradients_per_layer[k])
+
+      mean_diff = np.mean(np.abs(layer_numerical_estimation - layer_final_calculated))
+      print('Erro entre grandiente via backprop e grandiente numerico para Theta%d: %.10f' % (k + 1, mean_diff))
 
 
 if __name__ == '__main__':
@@ -169,13 +217,5 @@ if __name__ == '__main__':
   network = Network(3, x=x, y=y, epslon=0.0)
 
   print(network.backpropagation())
-
-
-
-# multiplicar a matrix com os pesos dos neuroneos pela matrix das entradas
-# calcular o g da matrix
-
-# matrix theta layer 1 (1-2) onde 1 é a origem (número de neuronios na camada de destino por número de pesos entrando em cada neuronio)
-# vetor com entradas = xi (iésima instancia de treinamento).
-# multiplicação é a matrix z2 que segnifica
-# aplicar a gradiente para pegar as ativações para ter o vetor a de camada de destino
+  network.calculate_gradient_numerical_verification()
+  network.compare_gradients_with_numerical_estimation()
