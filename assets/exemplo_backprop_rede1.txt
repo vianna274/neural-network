@@ -74,15 +74,15 @@ Rodando backpropagation
 
 		Gradientes de Theta1 com base no exemplo 2:
 			0.06740  0.02831  ok
-			0.08184  0.03437  
+			0.08184  0.03437  ok
 
 	Dataset completo processado. Calculando gradientes regularizados
 		Gradientes finais para Theta1 (com regularizacao):
-			0.02735  0.01333  
-			0.03318  0.01618  
+			0.02735  0.01333  ok
+			0.03318  0.01618  ok
 
 		Gradientes finais para Theta2 (com regularizacao):
-			0.23000  0.14037  0.13756  
+			0.23000  0.14037  0.13756  ok
 
 
 --------------------------------------------
