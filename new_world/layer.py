@@ -4,7 +4,7 @@ BIAS = 1
 
 
 class Layer:
-  def __init__(self, current_number_of_neurons: int, next_number_of_neurons: int, loaded_weights_matrix: np.matrix = None, neuron_values: np.matrix = None):
+  def __init__(self, current_number_of_neurons: int, next_number_of_neurons: int, regularization, loaded_weights_matrix: np.matrix = None, neuron_values: np.matrix = None):
     self.current_number_of_neurons = current_number_of_neurons
     self.next_number_of_neurons = next_number_of_neurons
     # setup layer weights
@@ -15,7 +15,7 @@ class Layer:
     self.delta = None
     self.D = None
     self.alpha = 0.0
-    self.regularization = 0.0
+    self.regularization = regularization
 
   def propagate(self, previous_layer, is_last_layer):
     self.z_matrix = np.dot(previous_layer.weights_matrix, previous_layer.neuron_values)

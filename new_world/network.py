@@ -46,9 +46,9 @@ class Network:
     for k in range(number_of_layers):
       if k + 1 <= number_of_layers - 1:
         self.layers.append(
-          Layer(network_topology[k], network_topology[k + 1], loaded_weights_matrix=network_weights[k]))
+          Layer(network_topology[k], network_topology[k + 1], self.regularization, loaded_weights_matrix=network_weights[k]))
       else:
-        self.layers.append(Layer(network_topology[k], 0))
+        self.layers.append(Layer(network_topology[k], 0, self.regularization))
 
   def propagate(self): # for 1 - n-1
     self.layers[0].neuron_values = np.transpose(self.current_x) # sets the value for the neurons in the first layer
