@@ -4,10 +4,11 @@ BIAS = 1
 
 
 class Layer:
-  def __init__(self, current_number_of_neurons: int, next_number_of_neurons: int, regularization, loaded_weights_matrix: np.matrix = None, neuron_values: np.matrix = None):
+  def __init__(self, current_number_of_neurons: int, next_number_of_neurons: int, regularization, loaded_weights_matrix: np.matrix = None, neuron_values: np.matrix = None, debug_flag: bool = False):
     self.current_number_of_neurons = current_number_of_neurons
     self.next_number_of_neurons = next_number_of_neurons
     # setup layer weights
+    self.debug_flag = debug_flag
     self.weights_matrix: np.matrix = None
     self.neuron_values: np.matrix = neuron_values # vai ser uma matrix coluna
     self.setup_initial_weights(loaded_weights_matrix)
@@ -65,15 +66,16 @@ class Layer:
       This function prepares the gradients (not final version) based on the weights and delta
     :param next_layer:
     """
-
-    print("[DEBUG] update_gradients!")
+    if (self.debug_flag):
+      print("[DEBUG] update_gradients!")
 
     gradient = np.dot(next_layer.delta, np.transpose(self.neuron_values))
 
     if self.D is None:
       self.D = np.zeros(gradient.shape)
 
-    print("gradient theta ", gradient)
+    if (self.debug_flag):
+      print("gradient theta ", gradient)
 
     self.D = self.D + gradient
 

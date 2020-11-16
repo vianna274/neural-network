@@ -14,7 +14,6 @@ class Utils:
     filepath = os.path.realpath(os.path.join(os.getcwd(), "assets/" + filename))
     layer_weights = []
 
-    print(filepath)
     with open(filepath, 'r') as f:
       for line in f:
         layer_weights.append(np.matrix(line))
@@ -89,7 +88,3 @@ class Utils:
       output_df.loc[i, [class_dictionary[instance_class]]] = 1
 
     return output_df, class_dictionary
-
-
-  
-          

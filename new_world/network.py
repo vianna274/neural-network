@@ -4,13 +4,12 @@ from typing import List
 
 BIAS = 1
 
-
 class Network:
-  def __init__(self, number_of_layers: int, x: np.matrix, y: np.matrix, regularization_factor: float, network_weights: List, network_topology: List):
+  def __init__(self, number_of_layers: int, x: np.matrix, y: np.matrix, regularization_factor: float, network_weights: List, network_topology: List, debug_flag: bool):
     self.number_of_layers = number_of_layers
     self.fx = None
     self.regularization: float = regularization_factor
-
+    self.debug_flag = debug_flag
     self.network_topology = network_topology
 
     # x and y represents the values for x and y from the training set
@@ -47,9 +46,9 @@ class Network:
     for k in range(number_of_layers):
       if k + 1 <= number_of_layers - 1:
         self.layers.append(
-          Layer(network_topology[k], network_topology[k + 1], self.regularization, loaded_weights_matrix=network_weights[k]))
+          Layer(network_topology[k], network_topology[k + 1], self.regularization, loaded_weights_matrix=network_weights[k], debug_flag=self.debug_flag))
       else:
-        self.layers.append(Layer(network_topology[k], 0, self.regularization))
+        self.layers.append(Layer(network_topology[k], 0, self.regularization, debug_flag=self.debug_flag))
 
   def propagate(self): # for 1 - n-1
     self.layers[0].neuron_values = np.transpose(self.current_x) # sets the value for the neurons in the first layer
@@ -127,25 +126,30 @@ class Network:
 
       self.fx = self.propagate() # 1.1
 
-      self.print_network_information()
+      if (self.debug_flag):
+        self.print_network_information()
 
       self.layers[last_layer_index].set_delta(self.fx - np.transpose(self.current_y)) # 1.2 calculates the delta for the last layer
 
-      print("delta ", last_layer_index+1, self.fx - np.transpose(self.current_y))
+      if (self.debug_flag):
+        print("delta ", last_layer_index+1, self.fx - np.transpose(self.current_y))
 
       for k in range(last_hidden_layer_index, first_hidden_layer_index, -1): # 1.3 calculates delta for the hidden layers
         self.layers[k].calculate_delta(self.layers[k+1])
         self.layers[k].remove_first_element_from_delta()
-        print("delta ", k + 1, self.layers[k].delta)
+        if (self.debug_flag):
+          print("delta ", k + 1, self.layers[k].delta)
 
       for k in range(last_hidden_layer_index, first_layer_index, -1): # 1.4 for each layer, updates the gradients based in the current example
-        print("k", k)
+        if (self.debug_flag):
+          print("k", k)
         self.layers[k].update_gradients(self.layers[k+1])
 
     for k in range(last_hidden_layer_index, first_layer_index, -1):  # 2
       self.layers[k].calculate_final_gradients(n)
       self.network_final_gradients_per_layer.append(self.layers[k].D)
-      print("Gradientes finais", k+1, self.layers[k].D)
+      if (self.debug_flag):
+        print("Gradientes finais", k+1, self.layers[k].D)
 
 
     for k in range(last_hidden_layer_index, first_layer_index, -1):  # 3 in the end of the epoch we update the weights
@@ -182,7 +186,8 @@ class Network:
           negative_variation_cost = float(self.cost_function()[0][0])
           line.append((positive_variation_cost - negative_variation_cost)/(2 * self.variation))
         layer_estimated_gradients.append(line)
-      print("Numerical gradient aprox for layer ", k, layer_estimated_gradients)
+      if (self.debug_flag):
+        print("Numerical gradient aprox for layer ", k, layer_estimated_gradients)
       network_estimated_gradients.append(layer_estimated_gradients)
 
     self.network_estimated_gradients_per_layer = [np.matrix(x) for x in network_estimated_gradients]
@@ -192,15 +197,17 @@ class Network:
     first_layer_index = -1
     last_hidden_layer_index = last_layer_index - 1
 
-    print("estimated", self.network_estimated_gradients_per_layer)
-    print("calculated", self.network_final_gradients_per_layer)
+    if (self.debug_flag):
+      print("estimated", self.network_estimated_gradients_per_layer)
+      print("calculated", self.network_final_gradients_per_layer)
 
     for k in range(last_hidden_layer_index, first_layer_index, -1):
       layer_numerical_estimation: np.matrix = np.array(self.network_estimated_gradients_per_layer[k])
       layer_final_calculated: np.matrix = np.array(self.network_final_gradients_per_layer[k])
 
       mean_diff = np.mean(np.abs(layer_numerical_estimation - layer_final_calculated))
-      print('Erro médio entre grandiente via backprop e grandiente numerico para Theta%d: %.10f' % (k + 1, mean_diff))
+      if (self.debug_flag):
+        print('Erro médio entre grandiente via backprop e grandiente numerico para Theta%d: %.10f' % (k + 1, mean_diff))
 
   def train(self):
     criteria_not_reached = True
@@ -209,6 +216,7 @@ class Network:
       self.backpropagation()
       current_cost = self.cost_function()
       criteria_not_reached = abs(current_cost - previous_cost) > self.stop_criteria
+
     print("J", previous_cost, current_cost)
 
     print("Predicted", self.classify(self.x[0]), self.y[0])

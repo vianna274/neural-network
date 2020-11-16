@@ -20,6 +20,7 @@ class CustomArgs(TypedDict):
   class_column: str
   network_file: str
   weights_file: str
+  debug: bool
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="Args to run NeuralNetwork")
@@ -29,10 +30,12 @@ if __name__ == '__main__':
   parser.add_argument("-s", required=False, dest="separator", default=";", help="The data separator", type=str)
   parser.add_argument("-n", required=True, dest="network_file", help="Network file: provides the topology of the network", type=str)
   parser.add_argument("-w", required=False, dest="weights_file", default="", help="Weights File", type=str)
+  parser.add_argument("-debug", required=False, dest="debug", default=False, help="Debug flag", type=bool)
   # parser.add_argument("-seed", required=False, dest="seed", default=26, help="Seed to random", type=int)
 
   args: CustomArgs = parser.parse_args()
-  print("args.weights_file", args.weights_file)
+  debug_flag = args.debug
+
   if len(args.weights_file) != 0:
     weights = Utils.read_weights(args.weights_file)
   else:
@@ -65,11 +68,8 @@ if __name__ == '__main__':
   network_topology[0] = x_matrix.shape[1]
   network_topology[-1] = y_matrix.shape[1]
 
-  neural = Network(number_of_layers, x_matrix, y_matrix, regulatizarion_fac, network_weights=weights, network_topology=network_topology)
+  neural = Network(number_of_layers, x_matrix, y_matrix, regulatizarion_fac, network_weights=weights, network_topology=network_topology, debug_flag=debug_flag)
   neural.train()
-
-
-
 
   #############################################
   ##     Validação K-Cross Estrafificada     ##
