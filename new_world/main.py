@@ -50,6 +50,8 @@ if __name__ == '__main__':
   filter_col_y = [col for col in dataframe if col.startswith('y')]
 
   x_df = dataframe[filter_col_x]
+  x_df = ((x_df - x_df.min()) / (x_df.max() - x_df.min()))
+
   y_df = dataframe[filter_col_y]
 
   x_matrix = np.matrix(x_df.to_numpy())
