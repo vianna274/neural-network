@@ -14,7 +14,7 @@ class Layer:
     self.z_matrix: np.matrix = None # matrix coluna que contém os valores q, se aplicado sigmoind, vai resultar na ativação da próxima layer
     self.delta = None
     self.D = None
-    self.alpha = 0.0
+    self.alpha = 0.01
     self.regularization = regularization
 
   def propagate(self, previous_layer, is_last_layer):

@@ -4,7 +4,7 @@ import pandas as pd
 from new_world.utils import Utils
 from new_world.network import Network
 import numpy as np
-from knnclassifier import KnnClassifier
+#from knnclassifier import KnnClassifier
 
 
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
   filter_col_y = [col for col in dataframe if col.startswith('y')]
 
   x_df = dataframe[filter_col_x]
-  x_df = ((x_df - x_df.min()) / (x_df.max() - x_df.min()))
+  # x_df = ((x_df - x_df.min()) / (x_df.max() - x_df.min()))
 
   y_df = dataframe[filter_col_y]
 
@@ -66,10 +66,10 @@ if __name__ == '__main__':
   network_topology[-1] = y_matrix.shape[1]
 
   neural = Network(number_of_layers, x_matrix, y_matrix, regulatizarion_fac, network_weights=weights, network_topology=network_topology)
-  neural.backpropagation()
-  print("cost", neural.cost_function())
-  neural.calculate_gradient_numerical_verification()
-  neural.compare_gradients_with_numerical_estimation()
+  neural.train()
+
+
+
 
   #############################################
   ##     Validação K-Cross Estrafificada     ##

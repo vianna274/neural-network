@@ -29,6 +29,7 @@ class Network:
     self.layers: List[Layer] = []
     network_weights = self.handle_inputed_weights(network_weights)
     self.initialize_network_weights(network_topology, network_weights, number_of_layers)
+    self.stop_criteria = 0.00001
 
   def handle_inputed_weights(self, network_weights):
     if network_weights is None:
@@ -105,12 +106,6 @@ class Network:
       print(self.layers[k].neuron_values.squeeze(1))
     print("f(x)", self.layers[self.number_of_layers-1].neuron_values.squeeze(1))
 
-
-  def train(self):
-    pass
-
-  def classify(self):
-    pass
 
   def backpropagation(self):
     """
@@ -207,6 +202,26 @@ class Network:
       mean_diff = np.mean(np.abs(layer_numerical_estimation - layer_final_calculated))
       print('Erro médio entre grandiente via backprop e grandiente numerico para Theta%d: %.10f' % (k + 1, mean_diff))
 
+  def train(self):
+    criteria_not_reached = True
+    while criteria_not_reached:
+      previous_cost = self.cost_function()
+      self.backpropagation()
+      current_cost = self.cost_function()
+      criteria_not_reached = abs(current_cost - previous_cost) > self.stop_criteria
+    print("J", previous_cost, current_cost)
+
+    print("Predicted", self.classify(self.x[0]), self.y[0])
+    print("Predicted", self.classify(self.x[1]), self.y[1])
+
+  def classify(self, instance: np.matrix):
+    """
+      Classifies an instance
+    :param instance: np.matrix
+    :return: the result of the propagation
+    """
+    self.current_x = instance
+    return self.propagate()
 
 if __name__ == '__main__':
   np.random.seed(4)
