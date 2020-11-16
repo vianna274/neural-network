@@ -4,6 +4,8 @@ import pandas as pd
 from new_world.utils import Utils
 from new_world.network import Network
 import numpy as np
+from knnclassifier import KnnClassifier
+
 
 
 #-n network_rede1.txt -w initial_weights_rede1.txt -f house-votes-84.tsv -s \t -c target
@@ -68,5 +70,15 @@ if __name__ == '__main__':
   print("cost", neural.cost_function())
   neural.calculate_gradient_numerical_verification()
   neural.compare_gradients_with_numerical_estimation()
+
+  #############################################
+  ##     Validação K-Cross Estrafificada     ##
+  #############################################
+
+  # class_column = GET FROM ARGS
+  # k = GET FROM ARGS
+  # k_folds = GET K FOLDS
+
+  ## KnnClassifier.k_fold_cross_validation(k, dataframe, class_column, neural)
 
 

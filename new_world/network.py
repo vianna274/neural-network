@@ -106,6 +106,11 @@ class Network:
     print("f(x)", self.layers[self.number_of_layers-1].neuron_values.squeeze(1))
 
 
+  def train(self):
+    pass
+
+  def classify(self):
+    pass
 
   def backpropagation(self):
     """
