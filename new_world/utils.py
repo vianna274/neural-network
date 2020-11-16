@@ -56,7 +56,39 @@ class Utils:
     my_df = pd.DataFrame(d, columns=['x'+str(i) for i in range(num_input_neurons)]+['y'+str(i) for i in range(num_output_neurons)])
     return my_df
 
+  @staticmethod
+  def get_xy_dataframe(df: pd.DataFrame, target_column: str):
+    """
+      Given a dataset, changes the features to xs and outputs to ys
 
+    :param df: dataframe that will be used for training
+    :param target_column: the column that will be considered as target for the training
+    :return: dataframe with x and y values
+    """
+
+    output_df = df
+
+    # treats the X case
+    x_columns = [col for col in df if col != target_column]
+    x_labels = ["x" + str(i) for i in range(len(x_columns))]
+    dictionary = dict(zip(x_columns, x_labels))
+    output_df = output_df.rename(columns=dictionary)
+
+    # treats the Y case
+    output_df = output_df.drop(columns=[target_column])
+    possible_classes = df[target_column].unique()
+    y_labels = ["y" + str(i) for i in range(len(possible_classes))]
+    class_dictionary = dict(zip(possible_classes, y_labels))
+    # add y columns with 0
+    for y in y_labels:
+      output_df[y] = 0
+
+    number_of_instances = df.shape[0]
+    for i in range(number_of_instances):
+      instance_class = df.loc[i, target_column]
+      output_df.loc[i, [class_dictionary[instance_class]]] = 1
+
+    return output_df, class_dictionary
 
 
   

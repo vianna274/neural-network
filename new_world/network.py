@@ -11,6 +11,8 @@ class Network:
     self.fx = None
     self.regularization: float = regularization_factor
 
+    self.network_topology = network_topology
+
     # x and y represents the values for x and y from the training set
     self.x: np.matrix = x
     self.y: np.matrix = y
@@ -25,7 +27,20 @@ class Network:
     self.network_estimated_gradients_per_layer = [] #used for the numerical verification
 
     self.layers: List[Layer] = []
+    network_weights = self.handle_inputed_weights(network_weights)
     self.initialize_network_weights(network_topology, network_weights, number_of_layers)
+
+  def handle_inputed_weights(self, network_weights):
+    if network_weights is None:
+      return self.generate_initial_weights()
+    else:
+      return network_weights
+
+  def generate_initial_weights(self):
+    generated_weights = []
+    for k in range(len(self.network_topology)-1):
+      generated_weights.append(np.matrix(np.random.random([self.network_topology[k+1], self.network_topology[k] + BIAS])))
+    return generated_weights
 
   def initialize_network_weights(self, network_topology, network_weights, number_of_layers):
     for k in range(number_of_layers):
@@ -114,9 +129,9 @@ class Network:
 
       self.print_network_information()
 
-      self.layers[last_layer_index].set_delta(self.fx - self.current_y) # 1.2 calculates the delta for the last layer
+      self.layers[last_layer_index].set_delta(self.fx - np.transpose(self.current_y)) # 1.2 calculates the delta for the last layer
 
-      print("delta ", last_layer_index+1, self.fx - self.current_y)
+      print("delta ", last_layer_index+1, self.fx - np.transpose(self.current_y))
 
       for k in range(last_hidden_layer_index, first_hidden_layer_index, -1): # 1.3 calculates delta for the hidden layers
         self.layers[k].calculate_delta(self.layers[k+1])

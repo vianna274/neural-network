@@ -13,7 +13,7 @@ class Layer:
     self.setup_initial_weights(loaded_weights_matrix)
     self.z_matrix: np.matrix = None # matrix coluna que contém os valores q, se aplicado sigmoind, vai resultar na ativação da próxima layer
     self.delta = None
-    self.D = np.zeros([1, next_number_of_neurons])
+    self.D = None
     self.alpha = 0.0
     self.regularization = 0.0
 
@@ -66,12 +66,14 @@ class Layer:
     :param next_layer:
     """
 
+    print("[DEBUG] update_gradients!")
+
     gradient = np.dot(next_layer.delta, np.transpose(self.neuron_values))
 
     if self.D is None:
       self.D = np.zeros(gradient.shape)
 
-    print("gradient tetha ", gradient)
+    print("gradient theta ", gradient)
 
     self.D = self.D + gradient
 
@@ -84,7 +86,7 @@ class Layer:
     weighs_without_bias = np.copy(self.weights_matrix)
     weighs_without_bias[:, 0] = 0 # zeroes the first column (for BIAS)
 
-    P = self.regularization * self.weights_matrix
+    P = self.regularization * weighs_without_bias
     self.D = (1/n) * (self.D + P)
 
   def update_weights(self):

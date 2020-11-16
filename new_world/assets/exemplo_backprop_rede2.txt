@@ -93,20 +93,24 @@ Rodando backpropagation
 		delta4: [0.07953   0.55832]
 		delta3: [0.01503   0.05809   0.06892]
 		delta2: [0.01694   0.01465   0.01999   0.01622]
+
+		até os deltas ok
+
+
 		Gradientes de Theta3 com base no exemplo 2:
-			0.07953  0.06841  0.07025  0.06346  
+			0.07953  0.06841  0.07025  0.06346  ok
 			0.55832  0.48027  0.49320  0.44549  
 
 		Gradientes de Theta2 com base no exemplo 2:
 			0.01503  0.00954  0.01042  0.00818  0.00972  
 			0.05809  0.03687  0.04025  0.03160  0.03756  
-			0.06892  0.04374  0.04775  0.03748  0.04456  
+			0.06892  0.04374  0.04775  0.03748  0.04456  okkkkkk
 
 		Gradientes de Theta1 com base no exemplo 2:
 			0.01694  0.01406  0.00034  
 			0.01465  0.01216  0.00029  
 			0.01999  0.01659  0.00040  
-			0.01622  0.01346  0.00032  
+			0.01622  0.01346  0.00032  okkk
 
 	Dataset completo processado. Calculando gradientes regularizados
 		Gradientes finais para Theta1 (com regularizacao):
