@@ -8,7 +8,7 @@ import numpy as np
 
 #-n network_rede1.txt -w initial_weights_rede1.txt -f house-votes-84.tsv -s \t -c target
 #-n network_rede1.txt -w initial_weights_rede1.txt -f dataset_rede1.txt
-
+#-n network_rede2.txt -w initial_weights_rede2.txt -f dataset_rede2.txt
 
 class CustomArgs(TypedDict):
   filename: str
@@ -30,8 +30,11 @@ if __name__ == '__main__':
   # parser.add_argument("-seed", required=False, dest="seed", default=26, help="Seed to random", type=int)
 
   args: CustomArgs = parser.parse_args()
-  print(args.weights_file)
-  weights = Utils.read_weights(args.weights_file)
+  print("args.weights_file", args.weights_file)
+  if len(args.weights_file) != 0:
+    weights = Utils.read_weights(args.weights_file)
+  else:
+    weights = None
   network_topology, regulatizarion_fac = Utils.read_network_file(args.network_file)
 
   file_name: str = args.filename
