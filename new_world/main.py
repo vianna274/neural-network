@@ -1,10 +1,10 @@
 import argparse
 from typing import TypedDict
 import pandas as pd
-from new_world.utils import Utils
-from new_world.network import Network
+from utils import Utils
+from network import Network
 import numpy as np
-#from knnclassifier import KnnClassifier
+from crossvalidator import CrossValidator
 
 
 
@@ -25,7 +25,7 @@ class CustomArgs(TypedDict):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="Args to run NeuralNetwork")
   parser.add_argument("-f", required=True, dest="filename", help="The dataset filename", type=str)
-  # parser.add_argument("-k", required=False, dest="k_folds", default=10, help="Number of folds", type=int)
+  parser.add_argument("-k", required=False, dest="k_folds", default=10, help="Number of folds", type=int)
   parser.add_argument("-c", required=False, dest="class_column", help="Column that has the classification", type=str)
   parser.add_argument("-s", required=False, dest="separator", default=";", help="The data separator", type=str)
   parser.add_argument("-n", required=True, dest="network_file", help="Network file: provides the topology of the network", type=str)
@@ -69,16 +69,16 @@ if __name__ == '__main__':
   network_topology[-1] = y_matrix.shape[1]
 
   neural = Network(number_of_layers, x_matrix, y_matrix, regulatizarion_fac, network_weights=weights, network_topology=network_topology, debug_flag=debug_flag)
-  neural.train()
+  #neural.train()
 
   #############################################
   ##     Validação K-Cross Estrafificada     ##
   #############################################
 
-  # class_column = GET FROM ARGS
-  # k = GET FROM ARGS
-  # k_folds = GET K FOLDS
+  class_column = args.class_column
+  k = args.k_folds
 
-  ## KnnClassifier.k_fold_cross_validation(k, dataframe, class_column, neural)
+  crossValidator = CrossValidator(k, dataframe, class_column, y_matrix, number_of_layers, regulatizarion_fac, weights, network_topology)
+  crossValidator.k_fold_cross_validation()
 
 

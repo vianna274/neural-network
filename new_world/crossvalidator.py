@@ -7,7 +7,7 @@ import statistics
 
 class CrossValidator:
 
-    def __init__(self, k, data, target_class, number_of_layers, regularization_fac, weights, network_topology):
+    def __init__(self, k, data, target_class, y_matrix, number_of_layers, regularization_fac, weights, network_topology):
         self.k = k
         self.df = data
         self.target_class = target_class
@@ -15,6 +15,7 @@ class CrossValidator:
         self.regularization_fac = regularization_fac
         self.weights = weights
         self.network_topology = network_topology
+        self.y_matrix = y_matrix
 
     def k_fold_cross_validation(self):
         results_for_each_permutation = []
@@ -23,8 +24,8 @@ class CrossValidator:
         train_time_mean = 0
 
         # Transformar os dados em KFolds
-        kfolds = KFolds(self.df, self.target_class, self.k)
-        k_folds = KFolds.get_folds()
+        k_folds = KFolds(self.df, self.y_matrix, self.k, self.target_class)
+        folds = k_folds.get_folds()
 
         start_geral_time = time.time()
 

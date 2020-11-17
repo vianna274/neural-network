@@ -1,5 +1,5 @@
 import numpy as np
-from new_world.layer import Layer
+from layer import Layer
 from typing import List
 
 BIAS = 1

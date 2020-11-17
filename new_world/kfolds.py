@@ -2,10 +2,11 @@ import pandas as pd
 
 
 class KFolds:
-    def __init__(self, dataframe, class_column, k):
+    def __init__(self, dataframe, y_set, k, class_column):
         self.df = dataframe
-        self.class_column = class_column
+        self.y_set = y_set
         self.k = k
+        self.class_column = ['y0', 'y1']
 
     """
       Returns k lists of lists that represent the folds
@@ -30,7 +31,17 @@ class KFolds:
       return self.get_folds_from_dataframe(folds_indexes)
 
     def possible_values(self):
-        return self.df[self.class_column].unique()
+        class_values = self.df[self.class_column]
+        hash = {}
+        unique_class_values = []
+
+        for class_value in class_values.values:
+            if str(class_value) not in hash.keys():
+                hash[str(class_value)] = True
+                unique_class_values.append(class_value)
+
+        return unique_class_values
+
 
     def get_folds_from_dataframe(self, folds_indexes):
         folds = []
