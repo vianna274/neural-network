@@ -36,6 +36,7 @@ class CrossValidator:
 
         # Iterativamente treinar um modelo:
         for i in range(self.k):
+            print("Fold #", i + 1)
             test_fold_index = i
             # Utilizando k-1 folds de treino e 1 de teste, variando o fold de teste a cada repetição.
             training_k_folds = folds[:]

@@ -214,7 +214,7 @@ class Network:
         print('Erro médio entre grandiente via backprop e grandiente numerico para Theta%d: %.10f' % (k + 1, mean_diff))
 
   def train(self):
-    print("Start training with", self.cos)
+    print("Start training with", self.cost_function())
     cost_list = []
     criteria_not_reached = True
     while criteria_not_reached:
@@ -224,6 +224,7 @@ class Network:
       current_cost = self.cost_function()
       criteria_not_reached = abs(current_cost - previous_cost) > self.stop_criteria
 
+    print("Ended training with ", current_cost)
     return cost_list
   def classify_dataset(self, dataset):
     """
