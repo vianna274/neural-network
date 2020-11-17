@@ -6,14 +6,13 @@ import pandas as pd
 BIAS = 1
 
 class Network:
-  def __init__(self, number_of_layers: int, x: np.matrix, y: np.matrix, regularization_factor: float, network_weights: List, network_topology: List, debug_flag: bool, alpha):
+  def __init__(self, number_of_layers: int, x: np.matrix, y: np.matrix, regularization_factor: float, network_weights: List, network_topology: List, debug_flag: bool, alpha, stop_criteria):
     self.number_of_layers = number_of_layers
     self.fx = None
     self.regularization: float = regularization_factor
     self.debug_flag = debug_flag
     self.network_topology = network_topology
     self.alpha = alpha
-
     # x and y represents the values for x and y from the training set
     self.x: np.matrix = x
     self.y: np.matrix = y
@@ -30,7 +29,7 @@ class Network:
     self.layers: List[Layer] = []
     network_weights = self.handle_inputed_weights(network_weights)
     self.initialize_network_weights(network_topology, network_weights, number_of_layers)
-    self.stop_criteria = 0.0001
+    self.stop_criteria = stop_criteria
 
   def handle_inputed_weights(self, network_weights):
     if network_weights is None:

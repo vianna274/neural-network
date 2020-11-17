@@ -7,7 +7,7 @@ import statistics
 
 class CrossValidator:
 
-    def __init__(self, k, data, filter_col_y, y_matrix, number_of_layers, regularization_fac, weights, network_topology, alpha):
+    def __init__(self, k, data, filter_col_y, y_matrix, number_of_layers, regularization_fac, weights, network_topology, alpha, stop_criteria):
         self.k = k
         self.df = data
         self.filter_col_y = filter_col_y
@@ -17,6 +17,7 @@ class CrossValidator:
         self.network_topology = network_topology
         self.y_matrix = y_matrix
         self.alpha = alpha
+        self.stop_criteria = stop_criteria
 
     def k_fold_cross_validation(self):
         results_for_each_permutation = []
@@ -57,7 +58,7 @@ class CrossValidator:
             self.network_topology[-1] = y_matrix.shape[1]
 
             # Criação da rede e Treinamento
-            model = Network(self.number_of_layers, x_matrix, y_matrix, self.regularization_fac, self.weights, self.network_topology, debug_flag=False, alpha=self.alpha)
+            model = Network(self.number_of_layers, x_matrix, y_matrix, self.regularization_fac, self.weights, self.network_topology, debug_flag=False, alpha=self.alpha, stop_criteria=self.stop_criteria)
             model.train()
 
             # Coletar resultados da predição utilizando o fold de teste
