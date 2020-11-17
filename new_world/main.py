@@ -22,6 +22,7 @@ class CustomArgs(TypedDict):
   weights_file: str
   debug: bool
   alpha: float
+  backprogtest: bool
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="Args to run NeuralNetwork")
@@ -33,6 +34,7 @@ if __name__ == '__main__':
   parser.add_argument("-w", required=False, dest="weights_file", default="", help="Weights File", type=str)
   parser.add_argument("-debug", required=False, dest="debug", default=False, help="Debug flag", type=bool)
   parser.add_argument("-alpha", required=False, dest="alpha", default=0.1, help="Alpha param", type=float)
+  parser.add_argument("-backprogtest", required=False, dest="backprogtest", default=False, help="Back prog test", type=bool)
   # parser.add_argument("-seed", required=False, dest="seed", default=26, help="Seed to random", type=int)
 
   args: CustomArgs = parser.parse_args()
@@ -68,20 +70,19 @@ if __name__ == '__main__':
   network_topology[0] = x_matrix.shape[1]
   network_topology[-1] = y_matrix.shape[1]
 
-  # neural = Network(number_of_layers, x_matrix, y_matrix, regulatizarion_fac, network_weights=weights, network_topology=network_topology, debug_flag=debug_flag)
-  # neural.train()
+  if (args.backprogtest):
+    neural = Network(number_of_layers, x_matrix, y_matrix, regulatizarion_fac, network_weights=weights, network_topology=network_topology, debug_flag=True, alpha=args.alpha)
+    neural.train()
+  else:
 
-  # print(neural.classify(x_matrix[0]))
+    #############################################
+    ##     Validação K-Cross Estrafificada     ##
+    #############################################
 
+    class_column = args.class_column
+    k = args.k_folds
 
-  #############################################
-  ##     Validação K-Cross Estrafificada     ##
-  #############################################
-
-  class_column = args.class_column
-  k = args.k_folds
-
-  crossValidator = CrossValidator(k, dataframe, filter_col_y, y_matrix, number_of_layers, regulatizarion_fac, weights, network_topology, args.alpha)
-  crossValidator.k_fold_cross_validation()
+    crossValidator = CrossValidator(k, dataframe, filter_col_y, y_matrix, number_of_layers, regulatizarion_fac, weights, network_topology, args.alpha)
+    crossValidator.k_fold_cross_validation()
 
 

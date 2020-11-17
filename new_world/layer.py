@@ -66,8 +66,6 @@ class Layer:
       This function prepares the gradients (not final version) based on the weights and delta
     :param next_layer:
     """
-    if (self.debug_flag):
-      print("[DEBUG] update_gradients!")
 
     gradient = np.dot(next_layer.delta, np.transpose(self.neuron_values))
 

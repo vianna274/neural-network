@@ -153,6 +153,9 @@ class Network:
       if (self.debug_flag):
         print("Gradientes finais", k+1, self.layers[k].D)
 
+    if (self.debug_flag):
+      self.calculate_gradient_numerical_verification()
+      self.compare_gradients_with_numerical_estimation()
 
     for k in range(last_hidden_layer_index, first_layer_index, -1):  # 3 in the end of the epoch we update the weights
       self.layers[k].update_weights()
@@ -218,7 +221,6 @@ class Network:
       self.backpropagation()
       current_cost = self.cost_function()
       criteria_not_reached = abs(current_cost - previous_cost) > self.stop_criteria
-      print("J", current_cost)
 
   def classify_dataset(self, dataset):
     """
@@ -243,13 +245,3 @@ class Network:
     """
     self.current_x = instance
     return self.propagate()
-
-if __name__ == '__main__':
-  np.random.seed(4)
-  x = np.matrix([[0.13], [0.42]])
-  y = np.matrix([[0.9], [0.23]])
-  network = Network(3, x=x, y=y, regularization_factor=0.0)
-
-  print(network.backpropagation())
-  network.calculate_gradient_numerical_verification()
-  network.compare_gradients_with_numerical_estimation()
