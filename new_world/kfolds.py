@@ -1,55 +1,31 @@
 import pandas as pd
+import numpy as np
 
 
 class KFolds:
-    def __init__(self, dataframe, y_set, k, class_column):
+    def __init__(self, dataframe, y_set, k, filter_col_y):
         self.df = dataframe
         self.y_set = y_set
         self.k = k
-        self.class_column = ['y0', 'y1']
+        self.filter_col_y = filter_col_y
 
     """
       Returns k lists of lists that represent the folds
     """
     def get_folds(self):
-      folds_indexes = []
-      fold_index = 0
+      folds = [[] for i in range(self.k)]
+      data_shuffled = self.df.sample(frac=1)
 
-      for i in range(0, self.k):
-        folds_indexes.append([])
+      for column in self.filter_col_y:
+        values_sets = np.array_split(data_shuffled[data_shuffled[column] == 1], 10)
 
-      for value in self.possible_values():
-        subset_data_value = self.df[self.df[self.class_column] == value]
+        for i in range(self.k):
+          folds[i].append(values_sets[i])
 
-        for index in subset_data_value.index.values:
-            folds_indexes[fold_index].append(index)
-            fold_index += 1
+      for i in range(len(folds)):
+        folds[i] = pd.concat(folds[i]).sample(frac=1)
 
-            if fold_index == len(folds_indexes):
-                fold_index = 0
-
-      return self.get_folds_from_dataframe(folds_indexes)
-
-    def possible_values(self):
-        class_values = self.df[self.class_column]
-        hash = {}
-        unique_class_values = []
-
-        for class_value in class_values.values:
-            if str(class_value) not in hash.keys():
-                hash[str(class_value)] = True
-                unique_class_values.append(class_value)
-
-        return unique_class_values
-
-
-    def get_folds_from_dataframe(self, folds_indexes):
-        folds = []
-
-        for indexes in folds_indexes:
-            folds.append(self.df[self.df.index.isin(indexes)])
-
-        return folds
+      return folds
 
     @staticmethod
     def join_k_folds_excluding_one(k_folds:list, excluded_index):

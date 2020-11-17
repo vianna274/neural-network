@@ -8,7 +8,7 @@ from crossvalidator import CrossValidator
 
 
 
-#-n network_rede1.txt -w initial_weights_rede1.txt -f house-votes-84.tsv -s \t -c target
+#-n network_rede1.txt -f house-votes-84.tsv -s \t -c target
 #-n network_rede1.txt -w initial_weights_rede1.txt -f dataset_rede1.txt
 #-n network_rede2.txt -w initial_weights_rede2.txt -f dataset_rede2.txt
 
@@ -78,7 +78,7 @@ if __name__ == '__main__':
   class_column = args.class_column
   k = args.k_folds
 
-  crossValidator = CrossValidator(k, dataframe, class_column, y_matrix, number_of_layers, regulatizarion_fac, weights, network_topology)
+  crossValidator = CrossValidator(k, dataframe, filter_col_y, y_matrix, number_of_layers, regulatizarion_fac, weights, network_topology)
   crossValidator.k_fold_cross_validation()
 
 
