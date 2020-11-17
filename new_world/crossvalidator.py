@@ -1,5 +1,6 @@
-from new_world.kfolds import KFolds
-from new_world.network import Network
+from kfolds import KFolds
+from network import Network
+from printtofile import PrintToFile
 import pandas as pd
 import numpy as np
 import time
@@ -24,6 +25,7 @@ class CrossValidator:
         accuracies = []
         classify_time_mean = 0
         train_time_mean = 0
+        iteration_costs = []
 
         # Transformar os dados em KFolds
         k_folds = KFolds(self.df, self.y_matrix, self.k, self.filter_col_y)
@@ -59,7 +61,7 @@ class CrossValidator:
 
             # Criação da rede e Treinamento
             model = Network(self.number_of_layers, x_matrix, y_matrix, self.regularization_fac, self.weights, self.network_topology, debug_flag=False, alpha=self.alpha, stop_criteria=self.stop_criteria)
-            model.train()
+            iteration_costs.append(model.train())
 
             # Coletar resultados da predição utilizando o fold de teste
             start_time = time.time()
@@ -85,6 +87,10 @@ class CrossValidator:
         result['std_accuracy'] = statistics.stdev(accuracies)
         result['min'] = min(accuracies)
         result['max'] = max(accuracies)
+
+        PrintToFile.print_j(iteration_costs)
+        PrintToFile.print_accuracy(accuracies)
+        PrintToFile.print_statistics(result)
 
         return result
 

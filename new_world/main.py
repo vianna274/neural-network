@@ -7,7 +7,6 @@ import numpy as np
 from crossvalidator import CrossValidator
 
 
-
 #-n network_rede1.txt -f house-votes-84.tsv -s \t -c target
 #-n network_rede1.txt -w initial_weights_rede1.txt -f dataset_rede1.txt
 #-n network_rede2.txt -w initial_weights_rede2.txt -f dataset_rede2.txt

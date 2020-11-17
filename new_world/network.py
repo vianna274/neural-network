@@ -1,5 +1,5 @@
 import numpy as np
-from new_world.layer import Layer
+from layer import Layer
 from typing import List
 import pandas as pd
 
@@ -214,13 +214,17 @@ class Network:
         print('Erro médio entre grandiente via backprop e grandiente numerico para Theta%d: %.10f' % (k + 1, mean_diff))
 
   def train(self):
+    cost_list = []
     criteria_not_reached = True
     while criteria_not_reached:
       previous_cost = self.cost_function()
+      cost_list.append(previous_cost.item(0))
       self.backpropagation()
       current_cost = self.cost_function()
+
       criteria_not_reached = abs(current_cost - previous_cost) > self.stop_criteria
 
+    return cost_list
   def classify_dataset(self, dataset):
     """
       Classifies an dataset
