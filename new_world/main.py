@@ -49,14 +49,12 @@ if __name__ == '__main__':
   else:
     dataframe: pd.DataFrame = pd.read_csv("./assets/" + file_name, sep=args.separator)
     dataframe, class_dictionary = Utils.get_xy_dataframe(dataframe, args.class_column)
-
+  # x_df = ((x_df - x_df.min()) / (x_df.max() - x_df.min()))
 
   filter_col_x = [col for col in dataframe if col.startswith('x')]
   filter_col_y = [col for col in dataframe if col.startswith('y')]
 
   x_df = dataframe[filter_col_x]
-  # x_df = ((x_df - x_df.min()) / (x_df.max() - x_df.min()))
-
   y_df = dataframe[filter_col_y]
 
   x_matrix = np.matrix(x_df.to_numpy())
@@ -68,8 +66,11 @@ if __name__ == '__main__':
   network_topology[0] = x_matrix.shape[1]
   network_topology[-1] = y_matrix.shape[1]
 
-  neural = Network(number_of_layers, x_matrix, y_matrix, regulatizarion_fac, network_weights=weights, network_topology=network_topology, debug_flag=debug_flag)
-  #neural.train()
+  # neural = Network(number_of_layers, x_matrix, y_matrix, regulatizarion_fac, network_weights=weights, network_topology=network_topology, debug_flag=debug_flag)
+  # neural.train()
+
+  # print(neural.classify(x_matrix[0]))
+
 
   #############################################
   ##     Validação K-Cross Estrafificada     ##

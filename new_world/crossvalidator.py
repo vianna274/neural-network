@@ -1,5 +1,5 @@
-from kfolds import KFolds
-from network import Network
+from new_world.kfolds import KFolds
+from new_world.network import Network
 import pandas as pd
 import numpy as np
 import time
@@ -33,24 +33,34 @@ class CrossValidator:
         for i in range(self.k):
             test_fold_index = i
             # Utilizando k-1 folds de treino e 1 de teste, variando o fold de teste a cada repetição.
-            training_k_folds = KFolds.join_k_folds_excluding_one(k_folds, test_fold_index)
-            test_k_fold = k_folds[test_fold_index]
+            training_k_folds = folds[:]
+            training_k_folds.pop(test_fold_index)
+            training_k_folds = pd.concat(training_k_folds)
+
+            test_k_fold = folds[test_fold_index]
 
             # valores de x e y de treino
-            x = training_k_folds.drop(self.target_class, axis=1).values
-            y = pd.get_dummies(training_k_folds[self.target_class]).values
+            filter_col_x = [col for col in training_k_folds if col.startswith('x')]
+            filter_col_y = [col for col in training_k_folds if col.startswith('y')]
 
-            # valores de x e y de teste
-            x_test = test_k_fold.drop(self.target_class, axis=1).values
-            y_test = pd.get_dummies(test_k_fold[self.target_class]).values
+            x_df = training_k_folds[filter_col_x]
+            y_df = training_k_folds[filter_col_y]
+
+            x_matrix = np.matrix(x_df.to_numpy())
+            y_matrix = np.matrix(y_df.to_numpy())
+
+            test_k_fold = test_k_fold[filter_col_x]
+
+            self.network_topology[0] = x_matrix.shape[1]
+            self.network_topology[-1] = y_matrix.shape[1]
 
             # Criação da rede e Treinamento
-            model = Network(self.number_of_layers, x, y, self.regularization_fac, self.weights, self.network_topology)
+            model = Network(self.number_of_layers, x_matrix, y_matrix, self.regularization_fac, self.weights, self.network_topology, debug_flag=False)
             model.train()
 
             # Coletar resultados da predição utilizando o fold de teste
             start_time = time.time()
-            result = model.classify(test_k_fold)
+            result = model.classify_dataset(test_k_fold)
             end_time = time.time()
             classify_time_mean += (end_time - start_time)
 
@@ -59,9 +69,6 @@ class CrossValidator:
 
             # TODO: n sei direito o que faz esse trecho:
             correct = 0
-            for i, r in enumerate(result):
-                if test_k_fold.iloc[[i]][self.target_class].values[0] == r:
-                    correct += 1
 
             accuracies.append(correct / len(result))
 

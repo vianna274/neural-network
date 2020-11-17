@@ -1,6 +1,7 @@
 import numpy as np
-from layer import Layer
+from new_world.layer import Layer
 from typing import List
+import pandas as pd
 
 BIAS = 1
 
@@ -28,7 +29,7 @@ class Network:
     self.layers: List[Layer] = []
     network_weights = self.handle_inputed_weights(network_weights)
     self.initialize_network_weights(network_topology, network_weights, number_of_layers)
-    self.stop_criteria = 0.00001
+    self.stop_criteria = 0.001
 
   def handle_inputed_weights(self, network_weights):
     if network_weights is None:
@@ -221,6 +222,22 @@ class Network:
 
     print("Predicted", self.classify(self.x[0]), self.y[0])
     print("Predicted", self.classify(self.x[1]), self.y[1])
+
+
+  def classify_dataset(self, dataset):
+    """
+      Classifies an dataset
+    :param dataset: pd.Dataframe
+    :return: list of results
+    """
+
+    instances = np.matrix(dataset.to_numpy())
+    results = []
+
+    for i in range(instances.shape[0]):
+      results.append(self.classify(instances[i]))
+
+    return results
 
   def classify(self, instance: np.matrix):
     """
