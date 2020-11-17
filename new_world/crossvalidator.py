@@ -7,7 +7,7 @@ import statistics
 
 class CrossValidator:
 
-    def __init__(self, k, data, filter_col_y, y_matrix, number_of_layers, regularization_fac, weights, network_topology):
+    def __init__(self, k, data, filter_col_y, y_matrix, number_of_layers, regularization_fac, weights, network_topology, alpha):
         self.k = k
         self.df = data
         self.filter_col_y = filter_col_y
@@ -16,6 +16,7 @@ class CrossValidator:
         self.weights = weights
         self.network_topology = network_topology
         self.y_matrix = y_matrix
+        self.alpha = alpha
 
     def k_fold_cross_validation(self):
         results_for_each_permutation = []
@@ -44,30 +45,30 @@ class CrossValidator:
             filter_col_y = [col for col in training_k_folds if col.startswith('y')]
 
             x_df = training_k_folds[filter_col_x]
+            x_df = ((x_df - x_df.min()) / (x_df.max() - x_df.min()))
             y_df = training_k_folds[filter_col_y]
 
             x_matrix = np.matrix(x_df.to_numpy())
             y_matrix = np.matrix(y_df.to_numpy())
 
-            test_k_fold = test_k_fold[filter_col_x]
+            test_k_fold_without_y = test_k_fold[filter_col_x]
 
             self.network_topology[0] = x_matrix.shape[1]
             self.network_topology[-1] = y_matrix.shape[1]
 
             # Criação da rede e Treinamento
-            model = Network(self.number_of_layers, x_matrix, y_matrix, self.regularization_fac, self.weights, self.network_topology, debug_flag=False)
+            model = Network(self.number_of_layers, x_matrix, y_matrix, self.regularization_fac, self.weights, self.network_topology, debug_flag=False, alpha=self.alpha)
             model.train()
 
             # Coletar resultados da predição utilizando o fold de teste
             start_time = time.time()
-            result = model.classify_dataset(test_k_fold)
+            result = model.classify_dataset(test_k_fold_without_y)
             end_time = time.time()
             classify_time_mean += (end_time - start_time)
 
             # Os resultados desta iteração são adicionados na lista:
             results_for_each_permutation.append(result)
 
-            # TODO: n sei direito o que faz esse trecho:
             correct = 0
 
             accuracies.append(correct / len(result))

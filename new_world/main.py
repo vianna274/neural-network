@@ -21,6 +21,7 @@ class CustomArgs(TypedDict):
   network_file: str
   weights_file: str
   debug: bool
+  alpha: float
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="Args to run NeuralNetwork")
@@ -31,6 +32,7 @@ if __name__ == '__main__':
   parser.add_argument("-n", required=True, dest="network_file", help="Network file: provides the topology of the network", type=str)
   parser.add_argument("-w", required=False, dest="weights_file", default="", help="Weights File", type=str)
   parser.add_argument("-debug", required=False, dest="debug", default=False, help="Debug flag", type=bool)
+  parser.add_argument("-alpha", required=False, dest="alpha", default=0.1, help="Alpha param", type=float)
   # parser.add_argument("-seed", required=False, dest="seed", default=26, help="Seed to random", type=int)
 
   args: CustomArgs = parser.parse_args()
@@ -49,7 +51,7 @@ if __name__ == '__main__':
   else:
     dataframe: pd.DataFrame = pd.read_csv("./assets/" + file_name, sep=args.separator)
     dataframe, class_dictionary = Utils.get_xy_dataframe(dataframe, args.class_column)
-  # x_df = ((x_df - x_df.min()) / (x_df.max() - x_df.min()))
+
 
   filter_col_x = [col for col in dataframe if col.startswith('x')]
   filter_col_y = [col for col in dataframe if col.startswith('y')]
@@ -79,7 +81,7 @@ if __name__ == '__main__':
   class_column = args.class_column
   k = args.k_folds
 
-  crossValidator = CrossValidator(k, dataframe, filter_col_y, y_matrix, number_of_layers, regulatizarion_fac, weights, network_topology)
+  crossValidator = CrossValidator(k, dataframe, filter_col_y, y_matrix, number_of_layers, regulatizarion_fac, weights, network_topology, args.alpha)
   crossValidator.k_fold_cross_validation()
 
 

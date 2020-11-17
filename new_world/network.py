@@ -6,12 +6,13 @@ import pandas as pd
 BIAS = 1
 
 class Network:
-  def __init__(self, number_of_layers: int, x: np.matrix, y: np.matrix, regularization_factor: float, network_weights: List, network_topology: List, debug_flag: bool):
+  def __init__(self, number_of_layers: int, x: np.matrix, y: np.matrix, regularization_factor: float, network_weights: List, network_topology: List, debug_flag: bool, alpha):
     self.number_of_layers = number_of_layers
     self.fx = None
     self.regularization: float = regularization_factor
     self.debug_flag = debug_flag
     self.network_topology = network_topology
+    self.alpha = alpha
 
     # x and y represents the values for x and y from the training set
     self.x: np.matrix = x
@@ -29,7 +30,7 @@ class Network:
     self.layers: List[Layer] = []
     network_weights = self.handle_inputed_weights(network_weights)
     self.initialize_network_weights(network_topology, network_weights, number_of_layers)
-    self.stop_criteria = 0.001
+    self.stop_criteria = 0.0001
 
   def handle_inputed_weights(self, network_weights):
     if network_weights is None:
@@ -47,9 +48,9 @@ class Network:
     for k in range(number_of_layers):
       if k + 1 <= number_of_layers - 1:
         self.layers.append(
-          Layer(network_topology[k], network_topology[k + 1], self.regularization, loaded_weights_matrix=network_weights[k], debug_flag=self.debug_flag))
+          Layer(network_topology[k], network_topology[k + 1], self.regularization, loaded_weights_matrix=network_weights[k], debug_flag=self.debug_flag, alpha=self.alpha))
       else:
-        self.layers.append(Layer(network_topology[k], 0, self.regularization, debug_flag=self.debug_flag))
+        self.layers.append(Layer(network_topology[k], 0, self.regularization, debug_flag=self.debug_flag,  alpha=self.alpha))
 
   def propagate(self): # for 1 - n-1
     self.layers[0].neuron_values = np.transpose(self.current_x) # sets the value for the neurons in the first layer
@@ -217,12 +218,7 @@ class Network:
       self.backpropagation()
       current_cost = self.cost_function()
       criteria_not_reached = abs(current_cost - previous_cost) > self.stop_criteria
-
-    print("J", previous_cost, current_cost)
-
-    print("Predicted", self.classify(self.x[0]), self.y[0])
-    print("Predicted", self.classify(self.x[1]), self.y[1])
-
+      print("J", current_cost)
 
   def classify_dataset(self, dataset):
     """

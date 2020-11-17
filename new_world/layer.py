@@ -4,7 +4,7 @@ BIAS = 1
 
 
 class Layer:
-  def __init__(self, current_number_of_neurons: int, next_number_of_neurons: int, regularization, loaded_weights_matrix: np.matrix = None, neuron_values: np.matrix = None, debug_flag: bool = False):
+  def __init__(self, current_number_of_neurons: int, next_number_of_neurons: int, regularization, loaded_weights_matrix: np.matrix = None, neuron_values: np.matrix = None, debug_flag: bool = False, alpha = 0.1):
     self.current_number_of_neurons = current_number_of_neurons
     self.next_number_of_neurons = next_number_of_neurons
     # setup layer weights
@@ -15,7 +15,7 @@ class Layer:
     self.z_matrix: np.matrix = None # matrix coluna que contém os valores q, se aplicado sigmoind, vai resultar na ativação da próxima layer
     self.delta = None
     self.D = None
-    self.alpha = 0.1
+    self.alpha = alpha
     self.regularization = regularization
 
   def propagate(self, previous_layer, is_last_layer):
