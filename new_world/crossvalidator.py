@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import time
 import statistics
+from typing import List
 
 class CrossValidator:
 
@@ -55,6 +56,7 @@ class CrossValidator:
             y_matrix = np.matrix(y_df.to_numpy())
 
             test_k_fold_without_y = test_k_fold[filter_col_x]
+            test_k_fold_y = test_k_fold[filter_col_y]
 
             self.network_topology[0] = x_matrix.shape[1]
             self.network_topology[-1] = y_matrix.shape[1]
@@ -69,12 +71,12 @@ class CrossValidator:
             end_time = time.time()
             classify_time_mean += (end_time - start_time)
 
+            accuracy = CrossValidator.compare_predicted_with_real(test_k_fold_y, result)
+
             # Os resultados desta iteração são adicionados na lista:
             results_for_each_permutation.append(result)
 
-            correct = 0
-
-            accuracies.append(correct / len(result))
+            accuracies.append(accuracy)
 
         end_geral_time = time.time()
         geral_time = end_geral_time - start_geral_time
@@ -94,6 +96,21 @@ class CrossValidator:
 
         return result
 
+
+    @staticmethod
+    def compare_predicted_with_real(complete: pd.DataFrame, predicted_results: List):
+        predicted_correctness = []
+        corrects = 0
+        for i, predicted_answer in enumerate(predicted_results):
+            ans = np.transpose(predicted_answer).tolist()[0]
+            real_ans = complete.iloc[[i]].values[0].tolist()
+
+            predicted_class = ans.index(max(ans))
+            real_class = real_ans.index(max(real_ans))
+            if predicted_class == real_class:
+                corrects += 1
+
+        return corrects/len(predicted_results)
 
     ##### N SEI SE VAI PRECISAR DISSO ABAIXO
     @staticmethod

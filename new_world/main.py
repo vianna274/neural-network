@@ -1,10 +1,10 @@
 import argparse
 from typing import TypedDict
 import pandas as pd
-from utils import Utils
-from network import Network
+from new_world.utils import Utils
+from new_world.network import Network
 import numpy as np
-from crossvalidator import CrossValidator
+from new_world.crossvalidator import CrossValidator
 
 
 #-n network_rede1.txt -f house-votes-84.tsv -s \t -c target
