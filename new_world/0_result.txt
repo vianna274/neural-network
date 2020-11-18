@@ -1,0 +1,1 @@
+{'classification_mean_time': 0.0054426431655883786, 'train_mean_time': 0.0, 'geral_time': 402.1686940193176, 'mean_accuracy': 0.8000553709856035, 'std_accuracy': 0.16205700512170518, 'min': 0.6136363636363636, 'max': 0.9767441860465116}
